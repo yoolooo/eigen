@@ -17,7 +17,7 @@ import {
 import { Schema, screenTrack } from "lib/utils/track"
 import { ProvideScreenDimensions, useScreenDimensions } from "lib/utils/useScreenDimensions"
 import React from "react"
-import { ActivityIndicator, FlatList, View } from "react-native"
+import { ActivityIndicator, FlatList, NativeModules, View } from "react-native"
 import { RefreshControl } from "react-native"
 import { commitMutation, createRefetchContainer, graphql, RelayRefetchProp } from "react-relay"
 import { TrackingProp } from "react-tracking"
@@ -92,6 +92,7 @@ export class Artwork extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    NativeModules.ARTemporaryAPIModule.registerForContinuation(this.props.artworkAboveTheFold)
     this.markArtworkAsRecentlyViewed()
   }
 

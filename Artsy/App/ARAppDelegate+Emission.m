@@ -165,6 +165,16 @@ FollowRequestFailure(RCTResponseSenderBlock block, BOOL following, NSError *erro
     });
 
     [AREmission setSharedInstance:emission];
+#pragma mark - Native Module: Continuation/Handoff
+
+    emission.APIModule.continuationRegisterer = ^(NSDictionary *_Nonnull entityInfo) {
+        ContinuationArtwork *artwork = [ContinuationArtwork new];
+        ar_dispatch_main_queue(^{
+            // TODO: Move to a dedicated class
+            [[ARTopMenuViewController sharedController] setUserActivity:[ARUserActivity activityForEntity:artwork]];
+            [[[ARTopMenuViewController sharedController] userActivity] becomeCurrent];
+        });
+    };
 
 #pragma mark - Native Module: Push Notification Permissions
 
@@ -183,7 +193,7 @@ FollowRequestFailure(RCTResponseSenderBlock block, BOOL following, NSError *erro
         }];
     };
 
-    emission.APIModule.augmentedRealityVIRPresenter = ^(NSString *imgUrl, CGFloat widthIn, CGFloat heightIn, NSString *artworkSlug, NSString *artworkId) {
+emission.APIModule.augmentedRealityVIRPresenter = ^(NSString *imgUrl, CGFloat widthIn, CGFloat heightIn, NSString *artworkSlug, NSString *artworkId) {
         // A bit weird, eh? Normally CGSize stores width+height in terms of pixels, but this one is stored in inches instead.
         CGSize size = CGSizeMake(widthIn, heightIn);
         NSURL *url = [NSURL URLWithString:imgUrl];

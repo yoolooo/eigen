@@ -149,6 +149,7 @@ NativeModules.ARNotificationsManager = {
 }
 
 NativeModules.ARTemporaryAPIModule = {
+  registerForContinuation: jest.fn(),
   requestNotificationPermissions: jest.fn(),
   fetchNotificationPermissions: jest.fn(),
   markNotificationsRead: jest.fn(),
