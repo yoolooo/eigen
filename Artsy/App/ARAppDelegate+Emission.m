@@ -168,7 +168,7 @@ FollowRequestFailure(RCTResponseSenderBlock block, BOOL following, NSError *erro
 #pragma mark - Native Module: Continuation/Handoff
 
     emission.APIModule.continuationRegisterer = ^(NSDictionary *_Nonnull entityInfo) {
-        ContinuationArtwork *artwork = [ContinuationArtwork new];
+        ContinuationArtwork *artwork = [[ContinuationArtwork alloc] initWithDictionary:entityInfo];
         ar_dispatch_main_queue(^{
             // TODO: Move to a dedicated class
             [[ARTopMenuViewController sharedController] setUserActivity:[ARUserActivity activityForEntity:artwork]];
