@@ -185,6 +185,10 @@ function getNativeModules(): typeof NativeModules {
       presentArtworksSet: jest.fn(),
     },
     Emission: null as never,
+    ARScreenPresenterModule: {
+      dismissModal: jest.fn(),
+      presentReactScreen: jest.fn(),
+    },
   }
 }
 
