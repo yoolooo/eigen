@@ -2,12 +2,12 @@ jest.mock("lib/relay/createEnvironment", () => ({
   defaultEnvironment: require("relay-test-utils").createMockEnvironment(),
 }))
 
-import { Button, Sans, Serif } from "@artsy/palette"
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
 import { merge } from "lodash"
+import { Button, Sans, Serif } from "palette"
 import React from "react"
 import { NativeModules, Text, TouchableWithoutFeedback } from "react-native"
 import "react-native"
-import * as renderer from "react-test-renderer"
 
 import { LinkText } from "../../../Text/LinkText"
 import { BidInfoRow } from "../../Components/BidInfoRow"
@@ -50,6 +50,7 @@ import Spinner from "lib/Components/Spinner"
 import { defaultEnvironment } from "lib/relay/createEnvironment"
 import { waitUntil } from "lib/tests/waitUntil"
 
+import { __appStoreTestUtils__ } from "lib/store/AppStore"
 import { BiddingThemeProvider } from "../../Components/BiddingThemeProvider"
 import { Address } from "../../types"
 import { SelectMaxBidEdit } from "../SelectMaxBidEdit"
@@ -68,7 +69,7 @@ const findPlaceBidButton = component => {
 
 // @ts-ignore STRICTNESS_MIGRATION
 const mountConfirmBidComponent = props => {
-  return renderer.create(
+  return renderWithWrappers(
     <BiddingThemeProvider>
       <ConfirmBid {...props} />
     </BiddingThemeProvider>
@@ -79,8 +80,7 @@ beforeEach(() => {
   nextStep = null // reset nextStep between tests
   // Because of how we mock metaphysics, the mocked value from one test can bleed into another.
   bidderPositionQueryMock.mockReset()
-
-  NativeModules.Emission.options.AROptionsPriceTransparency = true
+  __appStoreTestUtils__?.injectEmissionOptions({ AROptionsPriceTransparency: true })
 })
 
 it("renders without throwing an error", () => {
@@ -111,7 +111,7 @@ it("displays the artwork title correctly with date", () => {
 
 it("displays the artwork title correctly without date", () => {
   const datelessProps = merge({}, initialProps, { sale_artwork: { artwork: { date: null } } })
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <ConfirmBid {...datelessProps} />
     </BiddingThemeProvider>
@@ -154,7 +154,9 @@ it("can load and display price summary", () => {
 })
 
 it("does not display price summary when the feature flag is off", () => {
-  NativeModules.Emission.options.AROptionsPriceTransparency = false
+  __appStoreTestUtils__?.injectEmissionOptions({
+    AROptionsPriceTransparency: false,
+  })
 
   const component = mountConfirmBidComponent(initialProps)
 

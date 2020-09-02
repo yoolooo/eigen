@@ -98,6 +98,14 @@ class AuctionViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(AuctionViewController.registrationUpdated(_:)), name: NSNotification.Name.ARAuctionArtworkRegistrationUpdated, object: nil)
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        ARAnalytics.pageView("Sale", withProperties: [
+            "auction_slug": self.saleID,
+            "slug": "/auction/\(self.saleID)"
+        ])
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         userActivity?.invalidate()
@@ -236,7 +244,7 @@ extension AuctionViewController {
         let auctionInfoVC = AuctionInformationViewController(saleViewModel: saleViewModel)
 
         auctionInfoVC.titleViewDelegate = self
-        ar_addAlignedModernChildViewController(auctionInfoVC)
+        ar_addSafeAlignedModernChildViewController(auctionInfoVC)
 
         let bannerView = AuctionBannerView(viewModel: saleViewModel)
         bannerView.tag = ViewTags.banner.rawValue
@@ -250,7 +258,7 @@ extension AuctionViewController {
         self.headerStack = headerStack
         saleArtworksViewController = ARModelInfiniteScrollViewController()
 
-        ar_addAlignedModernChildViewController(saleArtworksViewController)
+        ar_addSafeAlignedModernChildViewController(saleArtworksViewController)
         saleArtworksViewController.view.backgroundColor = .black
 
         saleArtworksViewController.headerStackView = headerStack
@@ -330,6 +338,10 @@ extension AuctionViewController {
     }
 
     @objc func showRefineTapped() {
+        ARAnalytics.event(ARAnalyticsArtworksRefineTapped, withProperties: [
+            "auction_slug": self.saleID,
+            "auction_state": self.saleViewModel.saleAvailabilityString
+        ])
         self.showRefineTappedAnimated(true)
     }
 
@@ -381,6 +393,11 @@ extension TitleCallbacks: AuctionTitleViewDelegate {
     }
 
     func userDidPressRegister(_ titleView: AuctionTitleView) {
+        ARAnalytics.event(ARAnalyticsAuctionBidButtonTapped, withProperties: [
+            "auction_slug": self.saleID,
+            "auction_state": self.saleViewModel.saleAvailabilityString,
+            "context_type": self.navigationController?.topViewController == self ? "sale" : "sale information"
+        ])
         let showRegister = {
             let registrationPath = "/auction-registration/\(self.saleID)"
             let viewController = ARSwitchBoard.sharedInstance().loadPath(registrationPath)

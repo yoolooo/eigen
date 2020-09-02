@@ -1,4 +1,3 @@
-import { Flex, Sans, Spacer } from "@artsy/palette"
 import { ViewingRoomsHomeRail_regular$key } from "__generated__/ViewingRoomsHomeRail_regular.graphql"
 import { ViewingRoomsHomeRailQuery } from "__generated__/ViewingRoomsHomeRailQuery.graphql"
 import { ViewingRoomsListFeatured_featured$key } from "__generated__/ViewingRoomsListFeatured_featured.graphql"
@@ -8,6 +7,7 @@ import { extractNodes } from "lib/utils/extractNodes"
 import { PlaceholderBox, ProvidePlaceholderContext } from "lib/utils/placeholders"
 import { Schema } from "lib/utils/track"
 import _ from "lodash"
+import { Flex, Sans, Spacer } from "palette"
 import { MediumCard, Touchable } from "palette"
 import React, { useRef } from "react"
 import { FlatList, View } from "react-native"
@@ -31,7 +31,7 @@ export const ViewingRoomsHomeRail: React.FC<ViewingRoomsHomeRailProps> = props =
     <View ref={navRef}>
       <Flex mx="2">
         <SectionTitle
-          title="Viewing Rooms"
+          title="Viewing rooms"
           onPress={() => {
             trackEvent(tracks.tappedViewingRoomsHeader())
             SwitchBoard.presentNavigationViewController(navRef.current, "/viewing-rooms")

@@ -9,11 +9,11 @@ import React, { Component } from "react"
 import { RefreshControl } from "react-native"
 import { createPaginationContainer, graphql, QueryRenderer, RelayPaginationProp } from "react-relay"
 
-import { Spacer } from "@artsy/palette"
 import { FavoriteShows_me } from "__generated__/FavoriteShows_me.graphql"
 import { StickyTabPageFlatList } from "lib/Components/StickyTabPage/StickyTabPageFlatList"
 import { StickyTabPageScrollView } from "lib/Components/StickyTabPage/StickyTabPageScrollView"
 import { extractNodes } from "lib/utils/extractNodes"
+import { Spacer } from "palette"
 
 interface Props {
   me: FavoriteShows_me
@@ -82,7 +82,8 @@ export class Shows extends Component<Props, State> {
     return (
       <StickyTabPageFlatList
         data={shows}
-        style={{ paddingHorizontal: 0, paddingTop: 15 }}
+        style={{ paddingHorizontal: 0 }}
+        contentContainerStyle={{ paddingVertical: 15 }}
         onEndReached={this.loadMore}
         onEndReachedThreshold={0.2}
         ItemSeparatorComponent={() => <Spacer mb="5px" />}
@@ -121,16 +122,9 @@ const FavoriteShowsContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       // @ts-ignore STRICTNESS_MIGRATION
       return props.me && props.me.followsAndSaves.shows
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(_props, { count, cursor }, fragmentVariables) {
       return {

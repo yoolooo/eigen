@@ -1,4 +1,3 @@
-import { Box, Flex, Sans, Spacer } from "@artsy/palette"
 import { PartnerOverview_partner } from "__generated__/PartnerOverview_partner.graphql"
 import { ArtistListItemContainer as ArtistListItem } from "lib/Components/ArtistListItem"
 import { ReadMore } from "lib/Components/ReadMore"
@@ -6,6 +5,7 @@ import Spinner from "lib/Components/Spinner"
 import { StickyTabPageScrollView } from "lib/Components/StickyTabPage/StickyTabPageScrollView"
 import { TabEmptyState } from "lib/Components/TabEmptyState"
 import { extractNodes } from "lib/utils/extractNodes"
+import { Box, Flex, Sans, Spacer } from "palette"
 import React, { useState } from "react"
 import { Text } from "react-native"
 import { createPaginationContainer, graphql, RelayPaginationProp } from "react-relay"
@@ -18,10 +18,16 @@ export const PartnerOverview: React.FC<{
   relay: RelayPaginationProp
 }> = ({ partner, relay }) => {
   const [fetchingNextPage, setFetchingNextPage] = useState(false)
-  const artists = extractNodes(partner.artists)
+  const allArtists = extractNodes(partner.artists)
+
+  const getArtistsWithPublishedArtworks = (artists: typeof allArtists) => {
+    return artists.filter(artist => artist?.counts?.artworks)
+  }
+
+  const filteredArtists = getArtistsWithPublishedArtworks(allArtists)
 
   const renderArtists = () => {
-    return artists.map(artist => {
+    return filteredArtists.map(artist => {
       return (
         <Box key={artist.id}>
           <ArtistListItem artist={artist} />
@@ -33,7 +39,7 @@ export const PartnerOverview: React.FC<{
 
   const aboutText = partner.profile?.bio
 
-  if (!aboutText && !artists && !partner.cities) {
+  if (!aboutText && !filteredArtists && !partner.cities) {
     return (
       <StickyTabPageScrollView>
         <TabEmptyState text="There is no information for this gallery yet" />
@@ -66,13 +72,10 @@ export const PartnerOverview: React.FC<{
         </>
       )}
       <PartnerLocationSection partner={partner} />
-      {!!artists && artists.length > 0 && (
+      {!!filteredArtists && filteredArtists.length > 0 && (
         <>
           <Text>
-            <Sans size="4t">
-              Artists
-              {!!(partner.counts && partner.counts.artists) && ` (${partner.counts.artists})`}
-            </Sans>
+            <Sans size="4t">Artists ({filteredArtists.length})</Sans>
           </Text>
           <Spacer mb={2} />
           {renderArtists()}
@@ -102,9 +105,6 @@ export const PartnerOverviewFragmentContainer = createPaginationContainer(
         profile {
           bio
         }
-        counts {
-          artists
-        }
         artists: artistsConnection(sort: SORTABLE_ID_ASC, first: $count, after: $cursor)
           @connection(key: "Partner_artists") {
           pageInfo {
@@ -116,6 +116,9 @@ export const PartnerOverviewFragmentContainer = createPaginationContainer(
             node {
               id
               ...ArtistListItem_artist
+              counts {
+                artworks
+              }
             }
           }
         }
@@ -125,15 +128,8 @@ export const PartnerOverviewFragmentContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props.partner && props.partner.artists
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(props, { count, cursor }) {
       return {

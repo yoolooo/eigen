@@ -1,9 +1,9 @@
-import { BellIcon, Sans } from "@artsy/palette"
 import { ArtworkActionsTestsQueryRawResponse } from "__generated__/ArtworkActionsTestsQuery.graphql"
 // @ts-ignore STRICTNESS_MIGRATION
 import { shallow } from "enzyme"
 import { flushPromiseQueue } from "lib/tests/flushPromiseQueue"
 import { renderRelayTree } from "lib/tests/renderRelayTree"
+import { BellIcon, Sans } from "palette"
 import React from "react"
 import { NativeModules, TouchableWithoutFeedback } from "react-native"
 import { graphql } from "react-relay"
@@ -137,11 +137,8 @@ describe("ArtworkActions", () => {
   })
 
   describe("without AR enabled", () => {
-    beforeAll(() => {
-      NativeModules.ARCocoaConstantsModule.AREnabled = false
-    })
-
     it("does not show the View in Room option if the phone does not have AREnabled", () => {
+      NativeModules.ARCocoaConstantsModule.AREnabled = false
       // @ts-ignore STRICTNESS_MIGRATION
       const component = shallow(<ArtworkActions artwork={artworkActionsArtwork} />)
       expect(component.find(Sans).length).toEqual(2)

@@ -1,4 +1,3 @@
-import { Spacer } from "@artsy/palette"
 import { ViewingRoomsListFeatured_featured$key } from "__generated__/ViewingRoomsListFeatured_featured.graphql"
 import { AboveTheFoldFlatList } from "lib/Components/AboveTheFoldFlatList"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
@@ -6,6 +5,7 @@ import { RailScrollProps } from "lib/Scenes/Home/Components/types"
 import { extractNodes } from "lib/utils/extractNodes"
 import { Schema } from "lib/utils/track"
 import _ from "lodash"
+import { Spacer } from "palette"
 import { MediumCard, Touchable } from "palette"
 import React, { useImperativeHandle, useRef } from "react"
 import { FlatList, View } from "react-native"
@@ -50,7 +50,7 @@ export const FeaturedRail: React.FC<FeaturedRailProps & Partial<RailScrollProps>
   const featured = extractNodes(featuredData)
   const { trackEvent } = useTracking()
   const navRef = useRef(null)
-  const listRef = useRef<FlatList<any>>()
+  const listRef = useRef<FlatList<any>>(null)
   useImperativeHandle(scrollRef, () => ({
     scrollToTop: () => listRef.current?.scrollToOffset({ offset: 0 }),
   }))

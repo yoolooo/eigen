@@ -3,8 +3,8 @@ import React from "react"
 import { AppRegistry, View, YellowBox } from "react-native"
 import { RelayEnvironmentProvider } from "relay-hooks"
 
-import { Theme } from "@artsy/palette"
 import { SafeAreaInsets } from "lib/types/SafeAreaInsets"
+import { Theme } from "palette"
 import { ArtistQueryRenderer } from "./Containers/Artist"
 import { BidFlowQueryRenderer } from "./Containers/BidFlow"
 import { ConversationQueryRenderer } from "./Containers/Conversation"
@@ -14,6 +14,7 @@ import { InquiryQueryRenderer } from "./Containers/Inquiry"
 import { RegistrationFlowQueryRenderer } from "./Containers/RegistrationFlow"
 import { WorksForYouQueryRenderer } from "./Containers/WorksForYou"
 import { ArtistSeriesQueryRenderer } from "./Scenes/ArtistSeries/ArtistSeries"
+import { ArtistSeriesFullArtistSeriesListQueryRenderer } from "./Scenes/ArtistSeries/ArtistSeriesFullArtistSeriesList"
 import { ArtworkQueryRenderer } from "./Scenes/Artwork/Artwork"
 import { ArtworkAttributionClassFAQQueryRenderer } from "./Scenes/ArtworkAttributionClassFAQ"
 import { CityView } from "./Scenes/City"
@@ -29,13 +30,15 @@ import { CollectionFullFeaturedArtistListQueryRenderer } from "./Scenes/Collecti
 import { Consignments } from "./Scenes/Consignments"
 import { setupMyCollectionScreen } from "./Scenes/Consignments/v2/Boot"
 import { MyCollectionAddArtwork } from "./Scenes/Consignments/v2/Screens/AddArtwork/MyCollectionAddArtwork"
-import { MyCollectionArtworkDetailContainer as MyCollectionArtworkDetail } from "./Scenes/Consignments/v2/Screens/ArtworkDetail/MyCollectionArtworkDetail"
+import { MyCollectionArtworkDetail } from "./Scenes/Consignments/v2/Screens/ArtworkDetail/MyCollectionArtworkDetail"
 import { MyCollectionArtworkList } from "./Scenes/Consignments/v2/Screens/ArtworkList/MyCollectionArtworkList"
 import { MyCollectionHome } from "./Scenes/Consignments/v2/Screens/Home/MyCollectionHome"
 import { MyCollectionMarketingHome } from "./Scenes/Consignments/v2/Screens/Home/MyCollectionMarketingHome"
 import { SellTabApp } from "./Scenes/Consignments/v2/SellTabApp"
 
+import { FadeIn } from "./Components/FadeIn"
 import { _FancyModalPageWrapper } from "./Components/FancyModal/FancyModalContext"
+import { NativeViewController } from "./Components/NativeViewController"
 import { BottomTabs } from "./Scenes/BottomTabs/BottomTabs"
 import {
   FairArtistsQueryRenderer,
@@ -46,7 +49,7 @@ import {
   FairMoreInfoQueryRenderer,
 } from "./Scenes/Fair"
 import { FairQueryRenderer } from "./Scenes/Fair/Fair"
-import FavoritesScene from "./Scenes/Favorites/Favorites"
+import { Favorites } from "./Scenes/Favorites/Favorites"
 import { FeatureQueryRenderer } from "./Scenes/Feature/Feature"
 import { HomeQueryRenderer } from "./Scenes/Home/Home"
 import { MapContainer } from "./Scenes/Map"
@@ -64,15 +67,18 @@ import { MyProfilePushNotificationsQueryRenderer } from "./Scenes/MyProfile/MyPr
 import { PartnerQueryRenderer } from "./Scenes/Partner"
 import { PartnerLocationsQueryRenderer } from "./Scenes/Partner/Screens/PartnerLocations"
 import { PrivacyRequest } from "./Scenes/PrivacyRequest"
+import { SaleQueryRenderer } from "./Scenes/Sale"
 import { SalesQueryRenderer } from "./Scenes/Sales"
 import { Search } from "./Scenes/Search"
 import { ShowArtistsQueryRenderer, ShowArtworksQueryRenderer, ShowMoreInfoQueryRenderer } from "./Scenes/Show"
 import { ShowQueryRenderer } from "./Scenes/Show/Show"
+import { VanityURLEntityRenderer } from "./Scenes/VanityURL/VanityURLEntity"
+
 import { ViewingRoomQueryRenderer } from "./Scenes/ViewingRoom/ViewingRoom"
 import { ViewingRoomArtworkQueryRenderer } from "./Scenes/ViewingRoom/ViewingRoomArtwork"
 import { ViewingRoomArtworksQueryRenderer } from "./Scenes/ViewingRoom/ViewingRoomArtworks"
 import { ViewingRoomsListQueryRenderer } from "./Scenes/ViewingRoom/ViewingRoomsList"
-import { AppStoreProvider } from "./store/AppStore"
+import { AppStore, AppStoreProvider } from "./store/AppStore"
 import { Schema, screenTrack, track } from "./utils/track"
 import { ProvideScreenDimensions, useScreenDimensions } from "./utils/useScreenDimensions"
 
@@ -272,9 +278,15 @@ interface PageWrapperProps {
 
 const InnerPageWrapper: React.FC<PageWrapperProps> = ({ children, fullBleed }) => {
   const paddingTop = fullBleed ? 0 : useScreenDimensions().safeAreaInsets.top
+  const paddingBottom = fullBleed ? 0 : useScreenDimensions().safeAreaInsets.bottom
+  const isHydrated = AppStore.useAppState(state => state.sessionState.isHydrated)
   return (
-    <View style={{ flex: 1, paddingTop }}>
-      <View style={{ flexGrow: 1 }}>{children}</View>
+    <View style={{ flex: 1, paddingTop, paddingBottom }}>
+      {isHydrated ? (
+        <FadeIn style={{ flex: 1 }} slide={false}>
+          {children}
+        </FadeIn>
+      ) : null}
     </View>
   )
 }
@@ -284,17 +296,17 @@ const InnerPageWrapper: React.FC<PageWrapperProps> = ({ children, fullBleed }) =
 class PageWrapper extends React.Component<PageWrapperProps> {
   render() {
     return (
-      <RelayEnvironmentProvider environment={defaultEnvironment}>
-        <AppStoreProvider>
-          <Theme>
-            <ProvideScreenDimensions>
+      <ProvideScreenDimensions>
+        <RelayEnvironmentProvider environment={defaultEnvironment}>
+          <AppStoreProvider>
+            <Theme>
               <_FancyModalPageWrapper>
                 <InnerPageWrapper {...this.props} />
               </_FancyModalPageWrapper>
-            </ProvideScreenDimensions>
-          </Theme>
-        </AppStoreProvider>
-      </RelayEnvironmentProvider>
+            </Theme>
+          </AppStoreProvider>
+        </RelayEnvironmentProvider>
+      </ProvideScreenDimensions>
     )
   }
 }
@@ -308,77 +320,120 @@ function register(screenName: string, Component: React.ComponentType<any>, optio
   AppRegistry.registerComponent(screenName, () => WrappedComponent)
 }
 
-// TODO: Change everything to BidderFlow? AuctionAction?
-register("Artist", ArtistQueryRenderer)
-register("ArtistSeries", ArtistSeriesQueryRenderer)
-register("Artwork", Artwork)
-register("ArtworkAttributionClassFAQ", ArtworkAttributionClassFAQQueryRenderer)
-register("Auctions", SalesQueryRenderer)
-register("BidFlow", BidderFlow)
-register("City", CityView, { fullBleed: true })
-register("CityBMWList", CityBMWListQueryRenderer, { fullBleed: true })
-register("CityFairList", CityFairListQueryRenderer, { fullBleed: true })
-register("CityPicker", CityPicker, { fullBleed: true })
-register("CitySavedList", CitySavedListQueryRenderer)
-register("CitySectionList", CitySectionListQueryRenderer)
-register("Collection", CollectionQueryRenderer, { fullBleed: true })
+interface ModuleDescriptor {
+  fullBleed?: boolean
+  Component: React.ComponentType<any>
+}
 
-register("Conversation", Conversation)
-register("Fair", FairQueryRenderer, { fullBleed: true })
-register("FairArtists", FairArtists)
-register("FairArtworks", FairArtworks)
-register("FairBMWArtActivation", FairBMWArtActivation, { fullBleed: true })
-register("FairBooth", FairBooth)
-register("FairExhibitors", FairExhibitors)
-register("FairMoreInfo", FairMoreInfoQueryRenderer)
-register("Favorites", FavoritesScene)
-register("FullFeaturedArtistList", CollectionFullFeaturedArtistListQueryRenderer)
-register("Gene", Gene)
-register("Home", HomeQueryRenderer)
-register("Inbox", Inbox)
-register("Inquiry", Inquiry)
-register("Map", MapContainer, { fullBleed: true })
+// little helper function to make sure we get both intellisense and good type information on the result
+function defineModules<T extends string>(obj: Record<T, ModuleDescriptor>) {
+  return obj
+}
 
-// My Account screens
-register("MyAccount", MyAccountQueryRenderer)
-register("MyAccountEditName", MyAccountEditNameQueryRenderer)
-register("MyAccountEditPassword", MyAccountEditPassword)
-register("MyAccountEditEmail", MyAccountEditEmailQueryRenderer)
-register("MyAccountEditPhone", MyAccountEditPhoneQueryRenderer)
+export type AppModule = keyof typeof modules
 
-// My Bids
-register("MyBids", MyBidsQueryRenderer)
+const modules = defineModules({
+  Artist: { Component: ArtistQueryRenderer },
+  ArtistSeries: { Component: ArtistSeriesQueryRenderer },
+  Artwork: { Component: Artwork },
+  ArtworkAttributionClassFAQ: { Component: ArtworkAttributionClassFAQQueryRenderer },
+  Auction: { Component: SaleQueryRenderer, fullBleed: true },
+  Auctions: { Component: SalesQueryRenderer },
+  BidFlow: { Component: BidderFlow },
+  BottomTabs: { Component: BottomTabs, fullBleed: true },
+  City: { Component: CityView, fullBleed: true },
+  CityBMWList: { Component: CityBMWListQueryRenderer, fullBleed: true },
+  CityFairList: { Component: CityFairListQueryRenderer, fullBleed: true },
+  CityPicker: { Component: CityPicker, fullBleed: true },
+  CitySavedList: { Component: CitySavedListQueryRenderer },
+  CitySectionList: { Component: CitySectionListQueryRenderer },
+  Collection: { Component: CollectionQueryRenderer, fullBleed: true },
+  Consignments: { Component: setupMyCollectionScreen(Consignments) },
+  Conversation: { Component: Conversation },
+  Fair: { Component: FairQueryRenderer, fullBleed: true },
+  FairArtists: { Component: FairArtists },
+  FairArtworks: { Component: FairArtworks },
+  FairBMWArtActivation: { Component: FairBMWArtActivation, fullBleed: true },
+  FairBooth: { Component: FairBooth },
+  FairExhibitors: { Component: FairExhibitors },
+  FairMoreInfo: { Component: FairMoreInfoQueryRenderer },
+  Favorites: { Component: Favorites },
+  Feature: { Component: FeatureQueryRenderer, fullBleed: true },
+  FullArtistSeriesList: { Component: ArtistSeriesFullArtistSeriesListQueryRenderer },
+  FullFeaturedArtistList: { Component: CollectionFullFeaturedArtistListQueryRenderer },
+  Gene: { Component: Gene },
+  Home: { Component: HomeQueryRenderer },
+  Inbox: { Component: Inbox },
+  Inquiry: { Component: Inquiry },
+  Map: { Component: MapContainer, fullBleed: true },
+  MyAccount: { Component: MyAccountQueryRenderer },
+  MyAccountEditEmail: { Component: MyAccountEditEmailQueryRenderer },
+  MyAccountEditName: { Component: MyAccountEditNameQueryRenderer },
+  MyAccountEditPassword: { Component: MyAccountEditPassword },
+  MyAccountEditPhone: { Component: MyAccountEditPhoneQueryRenderer },
+  MyBids: { Component: MyBidsQueryRenderer },
+  MyCollectionAddArtwork: { Component: setupMyCollectionScreen(MyCollectionAddArtwork) },
+  MyCollectionArtworkDetail: { Component: setupMyCollectionScreen(MyCollectionArtworkDetail) },
+  MyCollectionArtworkList: { Component: setupMyCollectionScreen(MyCollectionArtworkList) },
+  MyCollectionHome: { Component: setupMyCollectionScreen(MyCollectionHome) },
+  MyCollectionMarketingHome: { Component: setupMyCollectionScreen(MyCollectionMarketingHome) },
+  MyProfile: { Component: MyProfileQueryRenderer },
+  MyProfilePayment: { Component: MyProfilePaymentQueryRenderer },
+  MyProfilePaymentNewCreditCard: { Component: MyProfilePaymentNewCreditCard },
+  MyProfilePushNotifications: { Component: MyProfilePushNotificationsQueryRenderer },
+  MySellingProfile: { Component: View },
+  NewSubmissionForm: { Component: NewSubmissionForm },
+  Partner: { Component: Partner, fullBleed: true },
+  PartnerLocations: { Component: PartnerLocations },
+  PrivacyRequest: { Component: PrivacyRequest },
+  Sales: { Component: setupMyCollectionScreen(Consignments) },
+  Search: { Component: SearchWithTracking },
+  SellTabApp: { Component: setupMyCollectionScreen(SellTabApp) },
+  Show: { Component: ShowQueryRenderer },
+  ShowArtists: { Component: ShowArtists },
+  ShowArtworks: { Component: ShowArtworks },
+  ShowMoreInfo: { Component: ShowMoreInfo },
+  VanityURLEntity: { Component: VanityURLEntityRenderer, fullBleed: true },
+  ViewingRoom: { Component: ViewingRoomQueryRenderer, fullBleed: true },
+  ViewingRoomArtwork: { Component: ViewingRoomArtworkQueryRenderer },
+  ViewingRoomArtworks: { Component: ViewingRoomArtworksQueryRenderer },
+  ViewingRooms: { Component: ViewingRoomsListQueryRenderer },
+  WorksForYou: { Component: WorksForYouQueryRenderer },
+})
 
-// My Collection
-register("Sales", setupMyCollectionScreen(Consignments)) // Placeholder for sales tab!
-register("Consignments", setupMyCollectionScreen(Consignments))
-register("SellTabApp", setupMyCollectionScreen(SellTabApp))
+for (const moduleName of Object.keys(modules)) {
+  const descriptor = modules[moduleName as AppModule]
+  register(moduleName, descriptor.Component, { fullBleed: descriptor.fullBleed })
+}
 
-register("MyCollectionAddArtwork", setupMyCollectionScreen(MyCollectionAddArtwork))
-register("MyCollectionArtworkDetail", setupMyCollectionScreen(MyCollectionArtworkDetail))
-register("MyCollectionArtworkList", setupMyCollectionScreen(MyCollectionArtworkList))
-register("MyCollectionHome", setupMyCollectionScreen(MyCollectionHome))
-register("MyCollectionMarketingHome", setupMyCollectionScreen(MyCollectionMarketingHome))
+const Main: React.FC<{}> = track()(({}) => {
+  const isHydrated = AppStore.useAppState(state => state.sessionState.isHydrated)
+  const isLoggedIn = AppStore.useAppState(state => !!state.native.sessionState.userID)
+  const onboardingState = AppStore.useAppState(state => state.native.sessionState.onboardingState)
 
-register("MyProfile", MyProfileQueryRenderer)
-register("MyProfilePayment", MyProfilePaymentQueryRenderer)
-register("MyProfilePaymentNewCreditCard", MyProfilePaymentNewCreditCard)
-register("MyProfilePushNotifications", MyProfilePushNotificationsQueryRenderer)
+  const screen = useScreenDimensions()
+  if (!isHydrated) {
+    return <View></View>
+  }
+  if (!isLoggedIn || onboardingState === "incomplete") {
+    return <NativeViewController viewName="Onboarding" />
+  }
+  return (
+    <View style={{ paddingBottom: screen.safeAreaInsets.bottom, flex: 1 }}>
+      <View style={{ flexGrow: 1 }}>
+        <NativeViewController viewName="Main" />
+      </View>
+      <BottomTabs />
+    </View>
+  )
+})
 
-register("MySellingProfile", View)
-register("NewSubmissionForm", NewSubmissionForm)
-register("Partner", Partner, { fullBleed: true })
-register("PartnerLocations", PartnerLocations)
-register("PrivacyRequest", PrivacyRequest)
-register("Search", SearchWithTracking)
-register("Show", ShowQueryRenderer)
-register("ShowArtists", ShowArtists)
-register("ShowArtworks", ShowArtworks)
-register("ShowMoreInfo", ShowMoreInfo)
-register("ViewingRooms", ViewingRoomsListQueryRenderer)
-register("ViewingRoom", ViewingRoomQueryRenderer, { fullBleed: true })
-register("ViewingRoomArtworks", ViewingRoomArtworksQueryRenderer)
-register("ViewingRoomArtwork", ViewingRoomArtworkQueryRenderer)
-register("WorksForYou", WorksForYouQueryRenderer)
-register("BottomTabs", BottomTabs, { fullBleed: true })
-register("Feature", FeatureQueryRenderer, { fullBleed: true })
+AppRegistry.registerComponent("Main", () => () => {
+  return (
+    <AppStoreProvider>
+      <ProvideScreenDimensions>
+        <Main />
+      </ProvideScreenDimensions>
+    </AppStoreProvider>
+  )
+})

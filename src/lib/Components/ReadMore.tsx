@@ -1,3 +1,7 @@
+import { plainTextFromTree } from "lib/utils/plainTextFromTree"
+import { defaultRules, renderMarkdown } from "lib/utils/renderMarkdown"
+import { Schema } from "lib/utils/track"
+import _ from "lodash"
 import {
   Color,
   Flex,
@@ -7,11 +11,7 @@ import {
   SerifProps,
   Text as PaletteText,
   TextProps as PaletteTextProps,
-} from "@artsy/palette"
-import { plainTextFromTree } from "lib/utils/plainTextFromTree"
-import { defaultRules, renderMarkdown } from "lib/utils/renderMarkdown"
-import { Schema } from "lib/utils/track"
-import _ from "lodash"
+} from "palette"
 import React, { useState } from "react"
 import { Text } from "react-native"
 import { useTracking } from "react-tracking"
@@ -146,9 +146,7 @@ function truncate({
             <>
               {"... "}
               <LinkText onPress={onExpand}>
-                <Sans size="3" weight="medium">
-                  Read&nbsp;more
-                </Sans>
+                <PaletteText variant="mediumText">Read&nbsp;more</PaletteText>
               </LinkText>
             </>
           )

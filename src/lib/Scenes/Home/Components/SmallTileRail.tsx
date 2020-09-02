@@ -1,19 +1,20 @@
 import * as Analytics from "@artsy/cohesion"
-import { Spacer } from "@artsy/palette"
 import { SmallTileRail_artworks } from "__generated__/SmallTileRail_artworks.graphql"
 import { AboveTheFoldFlatList } from "lib/Components/AboveTheFoldFlatList"
 import { saleMessageOrBidInfo } from "lib/Components/ArtworkGrids/ArtworkGridItem"
 import { ArtworkTileRailCard } from "lib/Components/ArtworkTileRail"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
+import { Spacer } from "palette"
 import React from "react"
 import { FlatList } from "react-native"
 import { createFragmentContainer, graphql } from "react-relay"
 import { useTracking } from "react-tracking"
+import { getUrgencyTag } from "../../../utils/getUrgencyTag"
 import HomeAnalytics from "../homeAnalytics"
 
 const SmallTileRail: React.FC<{
   artworks: SmallTileRail_artworks
-  listRef: React.MutableRefObject<FlatList<any> | undefined>
+  listRef: React.RefObject<FlatList<any>>
   contextModule: Analytics.ContextModule | undefined
 }> = ({ artworks, listRef, contextModule }) => {
   const tracking = useTracking()
@@ -43,8 +44,11 @@ const SmallTileRail: React.FC<{
               : undefined
           }
           imageURL={item.image?.imageURL ?? ""}
+          imageSize="small"
+          useSquareAspectRatio
           artistNames={item.artistNames}
-          saleMessage={saleMessageOrBidInfo(item)}
+          saleMessage={saleMessageOrBidInfo({ artwork: item, isSmallTile: true })}
+          urgencyTag={item?.sale?.isAuction && !item?.sale?.isClosed ? getUrgencyTag(item?.sale?.endAt) : null}
         />
       )}
       keyExtractor={(item, index) => String(item.image?.imageURL || index)}
@@ -64,8 +68,12 @@ export const SmallTileRailContainer = createFragmentContainer(SmallTileRail, {
         isAuction
         isClosed
         displayTimelyAt
+        endAt
       }
       saleArtwork {
+        counts {
+          bidderPositions
+        }
         currentBid {
           display
         }

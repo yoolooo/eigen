@@ -1,10 +1,10 @@
-import { Box, Join, Sans, Spacer } from "@artsy/palette"
 import { ArtworkDetails_artwork } from "__generated__/ArtworkDetails_artwork.graphql"
 import { ReadMore } from "lib/Components/ReadMore"
+import { getCurrentEmissionState } from "lib/store/AppStore"
 import { truncatedTextLimit } from "lib/utils/hardware"
-import { Schema, track } from "lib/utils/track"
+import { Schema } from "lib/utils/track"
+import { Box, Join, Sans, Spacer } from "palette"
 import React from "react"
-import { NativeModules } from "react-native"
 import { createFragmentContainer, graphql } from "react-relay"
 import { RequestConditionReportQueryRenderer } from "./RequestConditionReport"
 
@@ -12,18 +12,11 @@ interface ArtworkDetailsProps {
   artwork: ArtworkDetails_artwork
 }
 
-@track()
 export class ArtworkDetails extends React.Component<ArtworkDetailsProps> {
-  @track(() => ({
-    action_name: Schema.ActionNames.ShowMoreArtworksDetails,
-    action_type: Schema.ActionTypes.Tap,
-    flow: Schema.Flow.ArtworkDetails,
-    context_module: Schema.ContextModules.ArtworkDetails,
-  }))
   render() {
     const { artwork } = this.props
 
-    const enableLotConditionReport = NativeModules.Emission.options.AROptionsLotConditionReport
+    const enableLotConditionReport = getCurrentEmissionState().options.AROptionsLotConditionReport
 
     const listItems = [
       { title: "Medium", value: artwork.category },

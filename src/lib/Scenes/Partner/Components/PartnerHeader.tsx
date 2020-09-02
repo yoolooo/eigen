@@ -1,7 +1,7 @@
-import { Box, Flex, Sans } from "@artsy/palette"
 import { PartnerHeader_partner } from "__generated__/PartnerHeader_partner.graphql"
 import { Stack } from "lib/Components/Stack"
 import { formatText } from "lib/utils/formatText"
+import { Box, Flex, Sans } from "palette"
 import React from "react"
 import { createFragmentContainer, graphql } from "react-relay"
 import { PartnerFollowButtonFragmentContainer as FollowButton } from "./PartnerFollowButton"
@@ -13,15 +13,13 @@ const PartnerHeader: React.FC<{
 
   return (
     <Box px={2} pb={1} pt={6}>
-      <Sans mb={2} size="8">
+      <Sans mb={1} size="8">
         {partner.name}
       </Sans>
       <Flex flexDirection="row" justifyContent="space-between" alignItems="center">
         <Stack spacing={0.5}>
           {!!eligibleArtworks && (
-            <Sans size="3t">
-              {!!eligibleArtworks && formatText(eligibleArtworks, "Work for sale", "Works for sale")}
-            </Sans>
+            <Sans size="3t">{!!eligibleArtworks && formatText(eligibleArtworks, "work", "works")}</Sans>
           )}
         </Stack>
         {!!partner.profile && (

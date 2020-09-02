@@ -1,14 +1,14 @@
-import { CloseIcon, Flex, Sans, Spacer } from "@artsy/palette"
 import GraphemeSplitter from "grapheme-splitter"
 import OpaqueImageView from "lib/Components/OpaqueImageView/OpaqueImageView"
-import SwitchBoard from "lib/NativeModules/SwitchBoard"
+import SwitchBoard, { SlugType } from "lib/NativeModules/SwitchBoard"
+import { AppStore } from "lib/store/AppStore"
 import { normalizeText } from "lib/utils/normalizeText"
 import { Schema } from "lib/utils/track"
+import { CloseIcon, Flex, Sans, Spacer } from "palette"
 import React, { useContext, useRef } from "react"
 import { Text, TouchableOpacity, View } from "react-native"
 import { useTracking } from "react-tracking"
 import { AutosuggestResult } from "./AutosuggestResults"
-import { useRecentSearches } from "./RecentSearches"
 import { SearchContext } from "./SearchContext"
 
 export type OnResultPress = (result: AutosuggestResult) => void
@@ -31,7 +31,6 @@ export const SearchResult: React.FC<{
   updateRecentSearchesOnTap = true,
 }) => {
   const navRef = useRef<any>()
-  const { notifyRecentSearch } = useRecentSearches()
   const { inputRef, queryRef } = useContext(SearchContext)
   const { trackEvent } = useTracking()
   return (
@@ -44,9 +43,9 @@ export const SearchResult: React.FC<{
           inputRef.current?.blur()
           // need to wait a tick to push next view otherwise the input won't blur ¯\_(ツ)_/¯
           setTimeout(() => {
-            SwitchBoard.presentNavigationViewController(navRef.current, result.href!)
+            navigateToResult(result, navRef)
             if (updateRecentSearchesOnTap) {
-              notifyRecentSearch({ type: "AUTOSUGGEST_RESULT_TAPPED", props: result })
+              AppStore.actions.search.addRecentSearch({ type: "AUTOSUGGEST_RESULT_TAPPED", props: result })
             }
           }, 20)
           trackEvent({
@@ -97,6 +96,21 @@ export const SearchResult: React.FC<{
 }
 
 const splitter = new GraphemeSplitter()
+
+/**
+ * For some entities (fairs, partners) we pass along some context
+ * about the entity type to render the correct placeholder/skeleton loader
+ * @param result
+ */
+function navigateToResult(result: AutosuggestResult, navRef: React.MutableRefObject<any>) {
+  if (result.displayType === "Gallery" || result.displayType === "Institution") {
+    SwitchBoard.presentPartnerViewController(navRef.current, result.slug!)
+  } else if (result.displayType === "Fair") {
+    SwitchBoard.presentFairViewController(navRef.current, result.slug!, SlugType.ProfileID)
+  } else {
+    SwitchBoard.presentNavigationViewController(navRef.current, result.href!)
+  }
+}
 
 function applyHighlight(displayLabel: string, highlight: string | undefined) {
   // If highlight is not supplied then use medium weight, since the search result

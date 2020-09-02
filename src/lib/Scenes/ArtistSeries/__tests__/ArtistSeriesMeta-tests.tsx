@@ -1,16 +1,19 @@
-import { EntityHeader, Theme } from "@artsy/palette"
 import {
   ArtistSeriesMetaTestsQuery,
   ArtistSeriesMetaTestsQueryRawResponse,
 } from "__generated__/ArtistSeriesMetaTestsQuery.graphql"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
 import { ArtistSeriesMeta, ArtistSeriesMetaFragmentContainer } from "lib/Scenes/ArtistSeries/ArtistSeriesMeta"
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
+import { EntityHeader } from "palette"
 import React from "react"
-import { TouchableOpacity } from "react-native"
+import { TouchableOpacity, TouchableWithoutFeedback } from "react-native"
 import { graphql, QueryRenderer } from "react-relay"
-import ReactTestRenderer, { act } from "react-test-renderer"
+import { act } from "react-test-renderer"
+import { useTracking } from "react-tracking"
 import { createMockEnvironment } from "relay-test-utils"
 
+jest.mock("react-tracking")
 jest.unmock("react-relay")
 jest.mock("lib/NativeModules/SwitchBoard", () => ({
   presentNavigationViewController: jest.fn(),
@@ -18,9 +21,20 @@ jest.mock("lib/NativeModules/SwitchBoard", () => ({
 
 describe("Artist Series Meta", () => {
   let env: ReturnType<typeof createMockEnvironment>
+  const trackEvent = jest.fn()
 
   beforeEach(() => {
     env = createMockEnvironment()
+    const mockTracking = useTracking as jest.Mock
+    mockTracking.mockImplementation(() => {
+      return {
+        trackEvent,
+      }
+    })
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
   })
 
   const TestRenderer = () => (
@@ -36,11 +50,7 @@ describe("Artist Series Meta", () => {
       variables={{ artistSeriesID: "pumpkins" }}
       render={({ props, error }) => {
         if (props?.artistSeries) {
-          return (
-            <Theme>
-              <ArtistSeriesMetaFragmentContainer artistSeries={props.artistSeries} />
-            </Theme>
-          )
+          return <ArtistSeriesMetaFragmentContainer artistSeries={props.artistSeries} />
         } else if (error) {
           console.log(error)
         }
@@ -49,7 +59,7 @@ describe("Artist Series Meta", () => {
   )
 
   const getWrapper = () => {
-    const tree = ReactTestRenderer.create(<TestRenderer />)
+    const tree = renderWithWrappers(<TestRenderer />)
     act(() => {
       env.mock.resolveMostRecentOperation({
         errors: [],
@@ -89,10 +99,28 @@ describe("Artist Series Meta", () => {
     wrapper.props.onPress()
     expect(SwitchBoard.presentNavigationViewController).toHaveBeenCalledWith(expect.anything(), "/artist/yayoi-kusama")
   })
+
+  it("tracks unfollows", () => {
+    const wrapper = getWrapper()
+    const followButton = wrapper.root.findAllByType(EntityHeader)[0].findAllByType(TouchableWithoutFeedback)[0]
+    followButton.props.onPress()
+    expect(trackEvent).toHaveBeenCalledWith({
+      action: "unfollowedArtist",
+      context_module: "featuredArtists",
+      context_owner_id: "as1234",
+      context_owner_slug: "cool-artist-series",
+      context_owner_type: "artistSeries",
+      owner_id: "123456ASCFG",
+      owner_slug: "yayoi-kusama",
+      owner_type: "artist",
+    })
+  })
 })
 
 const ArtistSeriesFixture: ArtistSeriesMetaTestsQueryRawResponse = {
   artistSeries: {
+    internalID: "as1234",
+    slug: "cool-artist-series",
     title: "These are the Pumpkins",
     description: "A deliciously artistic variety of painted pumpkins.",
     artists: [

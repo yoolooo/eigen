@@ -1,7 +1,7 @@
-import { Box, Theme } from "@artsy/palette"
 import { LotsByFollowedArtists_me } from "__generated__/LotsByFollowedArtists_me.graphql"
 import { InfiniteScrollArtworksGridContainer as InfiniteScrollArtworksGrid } from "lib/Components/ArtworkGrids/InfiniteScrollArtworksGrid"
 import { SectionTitle } from "lib/Components/SectionTitle"
+import { Box, Theme } from "palette"
 import React, { Component } from "react"
 import { createPaginationContainer, graphql, RelayPaginationProp } from "react-relay"
 
@@ -56,7 +56,6 @@ export default createPaginationContainer(
   },
   {
     getConnectionFromProps: ({ me }) => me && me.lotsByFollowedArtistsConnection,
-    getFragmentVariables: (prevVars, totalCount) => ({ ...prevVars, count: totalCount }),
     getVariables: (_props, { count, cursor }) => ({ count, cursor }),
     query: graphql`
       query LotsByFollowedArtistsQuery($count: Int!, $cursor: String) {

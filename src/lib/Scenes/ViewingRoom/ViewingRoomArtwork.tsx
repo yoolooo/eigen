@@ -1,4 +1,3 @@
-import { Box, Button, EyeOpenedIcon, Flex, Sans, Separator, Spacer, Text } from "@artsy/palette"
 import { ViewingRoomArtwork_selectedArtwork$key } from "__generated__/ViewingRoomArtwork_selectedArtwork.graphql"
 import { ViewingRoomArtwork_viewingRoomInfo$key } from "__generated__/ViewingRoomArtwork_viewingRoomInfo.graphql"
 import { ViewingRoomArtworkQuery } from "__generated__/ViewingRoomArtworkQuery.graphql"
@@ -8,6 +7,7 @@ import { PlaceholderBox, PlaceholderText, ProvidePlaceholderContext } from "lib/
 import { ProvideScreenTracking, Schema } from "lib/utils/track"
 import { useScreenDimensions } from "lib/utils/useScreenDimensions"
 import _ from "lodash"
+import { Box, Button, EyeOpenedIcon, Flex, Sans, Separator, Spacer, Text } from "palette"
 import { LargeCard, Touchable } from "palette"
 import React, { useRef } from "react"
 import { FlatList, NativeModules, ScrollView, TouchableWithoutFeedback } from "react-native"
@@ -15,9 +15,6 @@ import { useTracking } from "react-tracking"
 import { graphql, useFragment, useQuery } from "relay-hooks"
 import { ImageCarousel } from "../Artwork/Components/ImageCarousel/ImageCarousel"
 import { tagForStatus } from "./Components/ViewingRoomsListItem"
-
-const Constants = NativeModules.ARCocoaConstantsModule
-const ApiModule = NativeModules.ARTemporaryAPIModule
 
 interface ViewingRoomArtworkProps {
   selectedArtwork: ViewingRoomArtwork_selectedArtwork$key
@@ -78,7 +75,7 @@ export const ViewingRoomArtworkContainer: React.FC<ViewingRoomArtworkProps> = pr
   const viewInAR = () => {
     const [widthIn, heightIn] = [selectedArtwork.widthCm!, selectedArtwork.heightCm!].map(cm2in)
 
-    ApiModule.presentAugmentedRealityVIR(
+    NativeModules.ARTemporaryAPIModule.presentAugmentedRealityVIR(
       selectedArtwork.image!.url!,
       widthIn,
       heightIn,
@@ -98,7 +95,7 @@ export const ViewingRoomArtworkContainer: React.FC<ViewingRoomArtworkProps> = pr
       <ScrollView ref={navRef}>
         <Flex>
           <ImageCarousel images={[selectedArtwork.images![0]] as any} cardHeight={screenHeight} />
-          {!!(Constants.AREnabled && selectedArtwork.isHangable) && (
+          {!!(NativeModules.ARCocoaConstantsModule.AREnabled && selectedArtwork.isHangable) && (
             <Flex
               position="absolute"
               bottom="1"
@@ -226,7 +223,7 @@ const query = graphql`
 const Placeholder = () => (
   <ProvidePlaceholderContext>
     <PlaceholderBox width="100%" height="60%" />
-    <Flex mt="2">
+    <Flex mt="2" ml="2">
       <PlaceholderText width={130 + Math.random() * 100} marginTop={10} />
       <PlaceholderText width={100 + Math.random() * 100} marginTop={8} />
       <PlaceholderText width={100 + Math.random() * 100} marginTop={15} />

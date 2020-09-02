@@ -56,5 +56,9 @@ RCT_EXPORT_METHOD(setApplicationIconBadgeNumber:(nonnull NSNumber *)count)
     });
 }
 
+RCT_EXPORT_METHOD(validateAuthCredentialsAreCorrect)
+{
+    self.authValidationChecker();
+}
 
 @end

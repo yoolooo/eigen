@@ -9,7 +9,6 @@ import { commitMutation, createFragmentContainer, fetchQuery, graphql, RelayProp
 import HomeAnalytics from "lib/Scenes/Home/homeAnalytics"
 import { useTracking } from "react-tracking"
 
-import { Flex } from "@artsy/palette"
 import { ArtistCard_artist } from "__generated__/ArtistCard_artist.graphql"
 import { ArtistRail_rail } from "__generated__/ArtistRail_rail.graphql"
 import { ArtistRailFollowMutation } from "__generated__/ArtistRailFollowMutation.graphql"
@@ -21,6 +20,7 @@ import { defaultEnvironment } from "lib/relay/createEnvironment"
 import { RailScrollProps } from "lib/Scenes/Home/Components/types"
 import { Schema } from "lib/utils/track"
 import { sample, uniq } from "lodash"
+import { Flex } from "palette"
 import { CARD_WIDTH } from "../CardRailCard"
 import { CardRailFlatList, INTER_CARD_PADDING } from "../CardRailFlatList"
 import { ArtistCard } from "./ArtistCard"
@@ -179,14 +179,14 @@ const ArtistRail: React.FC<Props & RailScrollProps> = props => {
   const title = (): string => {
     switch (props.rail.key) {
       case "TRENDING":
-        return "Trending Artists on Artsy"
+        return "Trending artists on Artsy"
       case "SUGGESTED":
-        return "Recommended Artists"
+        return "Recommended artists"
       case "POPULAR":
-        return "Popular Artists on Artsy"
+        return "Popular artists on Artsy"
       default:
         console.error("Unrecognized artist rail key", props.rail.key)
-        return "Recommended Artists"
+        return "Recommended artists"
     }
   }
 

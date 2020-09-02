@@ -1,23 +1,25 @@
-import { Flex, Join, Sans, Separator, Spacer } from "@artsy/palette"
 import { MyProfile_me } from "__generated__/MyProfile_me.graphql"
 import { MyProfileQuery } from "__generated__/MyProfileQuery.graphql"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
 import { defaultEnvironment } from "lib/relay/createEnvironment"
+import { useEmissionOption } from "lib/store/AppStore"
 import { extractNodes } from "lib/utils/extractNodes"
 import { PlaceholderBox, PlaceholderText } from "lib/utils/placeholders"
 import { renderWithPlaceholder } from "lib/utils/renderWithPlaceholder"
 import { times } from "lodash"
+import { ChevronIcon, Flex, Join, Sans, Separator, Spacer } from "palette"
 import React, { useCallback, useRef, useState } from "react"
 import { Alert, FlatList, NativeModules, RefreshControl, ScrollView } from "react-native"
 import { createRefetchContainer, graphql, QueryRenderer, RelayRefetchProp } from "react-relay"
 import { SmallTileRailContainer } from "../Home/Components/SmallTileRail"
+import { lotStandingIsClosed } from "../MyBids/helpers/lotStanding"
 import { MyProfileMenuItem } from "./Components/MyProfileMenuItem"
 
 const MyProfile: React.FC<{ me: MyProfile_me; relay: RelayRefetchProp }> = ({ me, relay }) => {
   const navRef = useRef(null)
-  const listRef = useRef<FlatList<any>>()
+  const listRef = useRef<FlatList<any>>(null)
   const recentlySavedArtworks = extractNodes(me.followsAndSaves?.artworksConnection)
-  const shouldDisplayMyBids = NativeModules?.Emission?.options?.AROptionsBidManagement
+  const shouldDisplayMyBids = useEmissionOption("AROptionsBidManagement")
   const [isRefreshing, setIsRefreshing] = useState(false)
   const onRefresh = useCallback(() => {
     setIsRefreshing(true)
@@ -26,6 +28,7 @@ const MyProfile: React.FC<{ me: MyProfile_me; relay: RelayRefetchProp }> = ({ me
       listRef.current?.scrollToOffset({ offset: 0, animated: false })
     })
   }, [])
+  const activeBidCount = extractNodes(me.auctionsLotStandingConnection).filter(ls => !lotStandingIsClosed(ls)).length
 
   return (
     <ScrollView ref={navRef} refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}>
@@ -38,10 +41,12 @@ const MyProfile: React.FC<{ me: MyProfile_me; relay: RelayRefetchProp }> = ({ me
         <MyProfileMenuItem
           title="My Bids"
           onPress={() => SwitchBoard.presentNavigationViewController(navRef.current!, "my-bids")}
+          value={activeBidCount > 0 && `${activeBidCount} active`}
+          chevron={<ChevronIcon direction="right" fill="black60" />}
         />
       )}
       <MyProfileMenuItem
-        title="Saves and Follows"
+        title="Saves and follows"
         onPress={() => SwitchBoard.presentNavigationViewController(navRef.current!, "favorites")}
       />
       {!!recentlySavedArtworks.length && (
@@ -58,17 +63,17 @@ const MyProfile: React.FC<{ me: MyProfile_me; relay: RelayRefetchProp }> = ({ me
         onPress={() => SwitchBoard.presentNavigationViewController(navRef.current!, "my-profile/payment")}
       />
       <MyProfileMenuItem
-        title="Push Notifications"
+        title="Push notifications"
         onPress={() => SwitchBoard.presentNavigationViewController(navRef.current!, "my-profile/push-notifications")}
       />
       <MyProfileMenuItem
-        title="Send Feedback"
+        title="Send feedback"
         onPress={() => {
           SwitchBoard.presentEmailComposer(navRef.current!, "feedback@artsy.net", "Feedback from the Artsy app")
         }}
       />
       <MyProfileMenuItem
-        title="Personal Data Request"
+        title="Personal data request"
         onPress={() => SwitchBoard.presentNavigationViewController(navRef.current!, "privacy-request")}
       />
       <MyProfileMenuItem title="Log out" onPress={confirmLogout} chevron={null} />
@@ -117,6 +122,15 @@ const MyProfileContainer = createRefetchContainer(
     me: graphql`
       fragment MyProfile_me on Me {
         name
+        auctionsLotStandingConnection(first: 25) {
+          edges {
+            node {
+              lotState {
+                soldStatus
+              }
+            }
+          }
+        }
         followsAndSaves {
           artworksConnection(first: 10, private: true) {
             edges {

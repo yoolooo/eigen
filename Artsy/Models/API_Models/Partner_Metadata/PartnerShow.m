@@ -1,5 +1,4 @@
 #import "Artwork.h"
-#import "ArtsyAPI+Shows.h"
 #import "ARStandardDateFormatter.h"
 #import "Fair.h"
 #import "Location.h"
@@ -10,7 +9,6 @@
 
 #import "ARMacros.h"
 
-#import <ReactiveObjC/ReactiveObjC.h>
 #import <ObjectiveSugar/ObjectiveSugar.h>
 
 static ARStandardDateFormatter *staticDateFormatter;
@@ -184,12 +182,6 @@ static ARStandardDateFormatter *staticDateFormatter;
     } else {
         return self.ausstellungsdauer;
     }
-}
-
-- (AFHTTPRequestOperation *)getArtworksAtPage:(NSInteger)page success:(void (^)(NSArray *artworks))success;
-{
-    return [ArtsyAPI getArtworksForShow:self atPage:page success:success failure:^(NSError *_) { success(@[]);
-    }];
 }
 
 #pragma mark ShareableObject

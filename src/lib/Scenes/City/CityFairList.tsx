@@ -1,4 +1,3 @@
-import { Box, Separator, Serif, Theme } from "@artsy/palette"
 import { CityFairList_city } from "__generated__/CityFairList_city.graphql"
 import { CityFairListQuery, CityFairListQueryVariables } from "__generated__/CityFairListQuery.graphql"
 import Spinner from "lib/Components/Spinner"
@@ -7,6 +6,7 @@ import { defaultEnvironment } from "lib/relay/createEnvironment"
 import { isCloseToBottom } from "lib/utils/isCloseToBottom"
 import renderWithLoadProgress from "lib/utils/renderWithLoadProgress"
 import { Schema, screenTrack } from "lib/utils/track"
+import { Box, Separator, Serif, Theme } from "palette"
 import React from "react"
 import { FlatList } from "react-native"
 import { createPaginationContainer, graphql, QueryRenderer, RelayPaginationProp } from "react-relay"
@@ -141,15 +141,8 @@ export const CityFairListContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props.city && props.city.fairs
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {

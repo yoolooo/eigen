@@ -1,3 +1,9 @@
+import { ArtworkActions_artwork } from "__generated__/ArtworkActions_artwork.graphql"
+import { ArtworkActionsSaveMutation } from "__generated__/ArtworkActionsSaveMutation.graphql"
+import { userHadMeaningfulInteraction } from "lib/NativeModules/Events"
+import { cm2in } from "lib/utils/conversions"
+import { Schema, track } from "lib/utils/track"
+import { take } from "lodash"
 import {
   BellFillIcon,
   BellIcon,
@@ -9,19 +15,12 @@ import {
   HeartIcon,
   Sans,
   ShareIcon,
-} from "@artsy/palette"
-import { ArtworkActions_artwork } from "__generated__/ArtworkActions_artwork.graphql"
-import { ArtworkActionsSaveMutation } from "__generated__/ArtworkActionsSaveMutation.graphql"
-import { userHadMeaningfulInteraction } from "lib/NativeModules/Events"
-import { cm2in } from "lib/utils/conversions"
-import { Schema, track } from "lib/utils/track"
-import { take } from "lodash"
+} from "palette"
 import React from "react"
 import { NativeModules, Share, TouchableWithoutFeedback, View } from "react-native"
 import { commitMutation, createFragmentContainer, graphql, RelayProp } from "react-relay"
 import styled from "styled-components/native"
 
-const Constants = NativeModules.ARCocoaConstantsModule
 const ApiModule = NativeModules.ARTemporaryAPIModule
 
 interface ArtworkActionsProps {
@@ -137,7 +136,7 @@ export class ArtworkActions extends React.Component<ArtworkActionsProps> {
             </TouchableWithoutFeedback>
           )}
 
-          {!!(Constants.AREnabled && is_hangable) && (
+          {!!(NativeModules.ARCocoaConstantsModule.AREnabled && is_hangable) && (
             <TouchableWithoutFeedback onPress={() => this.openViewInRoom()}>
               <UtilButton pr={3}>
                 <Box mr={0.5}>

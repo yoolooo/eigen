@@ -25,7 +25,7 @@ expect.extend({ toMatchDiffSnapshot: (diff as any).toMatchDiffSnapshot })
 jest.mock("react-tracking")
 import track, { useTracking } from "react-tracking"
 const trackEvent = jest.fn()
-;(track as jest.Mock).mockImplementation((_: any) => (x: any) => x)
+;(track as jest.Mock).mockImplementation(() => (x: any) => x)
 ;(useTracking as jest.Mock).mockImplementation(() => {
   return {
     trackEvent,
@@ -99,7 +99,6 @@ console.error = (message?: any) => {
   }
 }
 
-mockedModule("./lib/Components/SwitchView.tsx", "SwitchView")
 mockedModule("./lib/Components/Spinner.tsx", "ARSpinner")
 mockedModule("./lib/Components/OpaqueImageView/OpaqueImageView.tsx", "AROpaqueImageView")
 // mockedModule("./lib/Components/ArtworkGrids/InfiniteScrollGrid.tsx", "ArtworksGrid")
@@ -114,95 +113,97 @@ mockedModule("./lib/Components/Artist/ArtistAbout.tsx", "ArtistAbout")
 mockedModule("./lib/Components/Gene/Header.tsx", "Header")
 
 // Native modules
-import { ScreenDimensions } from "lib/utils/useScreenDimensions"
+import { ScreenDimensionsWithSafeAreas } from "lib/utils/useScreenDimensions"
 import { NativeModules } from "react-native"
-NativeModules.ARTakeCameraPhotoModule = {
-  errorCodes: {
-    cameraNotAvailable: "cameraNotAvailable",
-    imageMediaNotAvailable: "imageMediaNotAvailable",
-    cameraAccessDenied: "cameraAccessDenied",
-    saveFailed: "saveFailed",
-  },
-}
-NativeModules.ARCocoaConstantsModule = {
-  UIApplicationOpenSettingsURLString: "UIApplicationOpenSettingsURLString",
-  AREnabled: true,
-}
 
-NativeModules.ARNotificationsManager = {
-  nativeState: {
-    selectedTab: "home",
-    emissionOptions: {
-      AROptionsBidManagement: false,
-      AROptionsEnableMyCollection: false,
-      AROptionsLotConditionReport: false,
-      AROptionsPriceTransparency: false,
-      AROptionsViewingRooms: false,
-      AREnableViewingRooms: false,
-      ipad_vir: false,
-      iphone_vir: false,
-      ARDisableReactNativeBidFlow: false,
-      AREnableNewPartnerView: false,
+function getNativeModules(): typeof NativeModules {
+  return {
+    ARTakeCameraPhotoModule: {
+      errorCodes: {
+        cameraNotAvailable: "cameraNotAvailable",
+        imageMediaNotAvailable: "imageMediaNotAvailable",
+        cameraAccessDenied: "cameraAccessDenied",
+        saveFailed: "saveFailed",
+      },
     },
-  },
-  postNotificationName: jest.fn(),
-}
-
-NativeModules.ARTemporaryAPIModule = {
-  registerForContinuation: jest.fn(),
-  requestNotificationPermissions: jest.fn(),
-  fetchNotificationPermissions: jest.fn(),
-  markNotificationsRead: jest.fn(),
-  setApplicationIconBadgeNumber: jest.fn(),
-  presentAugmentedRealityVIR: jest.fn(),
-}
-
-beforeEach(() => {
-  ;(NativeModules.ARTemporaryAPIModule.markNotificationsRead as jest.Mock).mockReset()
-  ;(NativeModules.ARTemporaryAPIModule.setApplicationIconBadgeNumber as jest.Mock).mockReset()
-  ;(NativeModules.ARNotificationsManager.postNotificationName as jest.Mock).mockReset()
-})
-
-function setupEmissionModule() {
-  NativeModules.Emission = {
-    userAgent: "Jest Unit Tests",
-    env: "test",
-    authenticationToken: "authenticationToken",
-    googleMapsAPIKey: "googleMapsAPIKey",
-    gravityURL: "gravityURL",
-    launchCount: 1,
-    mapBoxAPIClientKey: "mapBoxAPIClientKey",
-    metaphysicsURL: "metaphysicsURL",
-    deviceId: "testDevice",
-    options: {
-      AROptionsBidManagement: false,
-      AROptionsEnableMyCollection: false,
-      AROptionsLotConditionReport: false,
-      AROptionsPriceTransparency: false,
-      AROptionsViewingRooms: false,
-      AREnableViewingRooms: false,
-      ipad_vir: false,
-      iphone_vir: false,
-      ARDisableReactNativeBidFlow: false,
-      AREnableNewPartnerView: false,
+    ARCocoaConstantsModule: {
+      UIApplicationOpenSettingsURLString: "UIApplicationOpenSettingsURLString",
+      AREnabled: true,
+      CurrentLocale: "en_US",
+      LocalTimeZone: "",
     },
-    predictionURL: "predictionURL",
-    sentryDSN: "sentryDSN",
-    stripePublishableKey: "stripePublishableKey",
-    userID: "userID",
+    ARNotificationsManager: {
+      nativeState: {
+        userAgent: "Jest Unit Tests",
+        env: "test",
+        authenticationToken: "authenticationToken",
+        onboardingState: "complete",
+        gravityURL: "gravityURL",
+        launchCount: 1,
+        metaphysicsURL: "metaphysicsURL",
+        deviceId: "testDevice",
+        predictionURL: "predictionURL",
+        sentryDSN: "sentryDSN",
+        stripePublishableKey: "stripePublishableKey",
+        userID: "userID",
+        selectedTab: "home",
+        options: {
+          AROptionsBidManagement: false,
+          AROptionsEnableMyCollection: false,
+          AROptionsLotConditionReport: false,
+          AROptionsPriceTransparency: false,
+          AROptionsViewingRooms: false,
+          AREnableViewingRooms: false,
+          AROptionsArtistSeries: false,
+          ipad_vir: false,
+          iphone_vir: false,
+          ARDisableReactNativeBidFlow: false,
+          AREnableNewPartnerView: false,
+          AROptionsNewFirstInquiry: false,
+        },
+      },
+      postNotificationName: jest.fn(),
+    },
+
+    ARTemporaryAPIModule: {
+      registerForContinuation: jest.fn(),
+      validateAuthCredentialsAreCorrect: jest.fn(),
+      requestNotificationPermissions: jest.fn(),
+      fetchNotificationPermissions: jest.fn(),
+      markNotificationsRead: jest.fn(),
+      setApplicationIconBadgeNumber: jest.fn(),
+      presentAugmentedRealityVIR: jest.fn(),
+    },
+
+    ARSwitchBoardModule: {
+      presentNavigationViewController: jest.fn(),
+      presentModalViewController: jest.fn(),
+      presentMediaPreviewController: jest.fn(),
+      presentArtworksSet: jest.fn(),
+    },
+    Emission: null as never,
   }
 }
 
-setupEmissionModule()
+Object.assign(NativeModules, getNativeModules())
 
-beforeEach(setupEmissionModule)
-
-NativeModules.ARSwitchBoardModule = {
-  presentNavigationViewController: jest.fn(),
-  presentModalViewController: jest.fn(),
-  presentMediaPreviewController: jest.fn(),
-  presentArtworksSet: jest.fn(),
-}
+const _ = jest.requireActual("lodash")
+beforeEach(() => {
+  function reset(a: any, b: any) {
+    Object.keys(a).forEach(k => {
+      if (_.isPlainObject(a[k])) {
+        reset(a[k], b[k])
+      } else {
+        if (a[k]?.mockReset) {
+          a[k].mockReset()
+        } else {
+          a[k] = b?.[k] ?? a[k]
+        }
+      }
+    })
+  }
+  reset(NativeModules, getNativeModules())
+})
 
 declare const process: any
 
@@ -260,7 +261,7 @@ if (process.env.ALLOW_CONSOLE_LOGS !== "true") {
 
 jest.mock("./lib/utils/useScreenDimensions", () => {
   const React = require("react")
-  const screenDimensions: ScreenDimensions = {
+  const screenDimensions: ScreenDimensionsWithSafeAreas = {
     width: 380,
     height: 550,
     orientation: "portrait",
@@ -276,7 +277,6 @@ jest.mock("./lib/utils/useScreenDimensions", () => {
     ScreenDimensionsContext: {
       Consumer: ({ children }: any) => children(screenDimensions),
     },
-    getCurrentScreenDimensions: () => screenDimensions,
     ProvideScreenDimensions: ({ children }: React.PropsWithChildren<{}>) => {
       return React.createElement(React.Fragment, null, children)
     },
@@ -297,6 +297,32 @@ jest.mock("@react-native-community/async-storage", () => {
     getItem(key: string) {
       return Promise.resolve(state[key])
     },
+    removeItem(key: string) {
+      delete state[key]
+      return Promise.resolve()
+    },
+    clear() {
+      state = {}
+      return Promise.resolve()
+    },
+    getAllKeys() {
+      return Promise.resolve(Object.keys(state))
+    },
+    mergeItem() {
+      throw new Error("mock version of mergeItem not yet implemented")
+    },
+    multiGet() {
+      throw new Error("mock version of multiGet not yet implemented")
+    },
+    multiMerge() {
+      throw new Error("mock version of multiMerge not yet implemented")
+    },
+    multiRemove() {
+      throw new Error("mock version of multiRemove not yet implemented")
+    },
+    multiSet() {
+      throw new Error("mock version of multiSet not yet implemented")
+    },
   }
 })
 
@@ -311,8 +337,16 @@ jest.mock("react-native/Libraries/LayoutAnimation/LayoutAnimation", () => ({
   spring: jest.fn(),
 }))
 
-jest.mock("@artsy/palette/dist/helpers/isReactNative", () => ({
-  isReactNative() {
-    return true
-  },
+jest.mock("react-native-config", () => ({
+  ARTSY_API_CLIENT_SECRET: "-",
+  ARTSY_API_CLIENT_KEY: "-",
+  ARTSY_FACEBOOK_APP_ID: "-",
+  SEGMENT_PRODUCTION_WRITE_KEY: "-",
+  SEGMENT_STAGING_WRITE_KEY: "-",
+  ARTSY_ECHO_PRODUCTION_TOKEN: "-",
+  SEGMENT_PRODUCTION_DSN: "-",
+  SEGMENT_STAGING_DSN: "-",
+  GOOGLE_MAPS_API_KEY: "-",
+  MAPBOX_API_CLIENT_KEY: "-",
+  SAILTHRU_KEY: "-",
 }))

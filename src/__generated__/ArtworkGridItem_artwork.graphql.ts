@@ -8,14 +8,19 @@ export type ArtworkGridItem_artwork = {
     readonly date: string | null;
     readonly saleMessage: string | null;
     readonly slug: string;
+    readonly internalID: string;
     readonly artistNames: string | null;
     readonly href: string | null;
     readonly sale: {
         readonly isAuction: boolean | null;
         readonly isClosed: boolean | null;
         readonly displayTimelyAt: string | null;
+        readonly endAt: string | null;
     } | null;
     readonly saleArtwork: {
+        readonly counts: {
+            readonly bidderPositions: number | null;
+        } | null;
         readonly currentBid: {
             readonly display: string | null;
         } | null;
@@ -75,6 +80,13 @@ const node: ReaderFragment = {
     {
       "kind": "ScalarField",
       "alias": null,
+      "name": "internalID",
+      "args": null,
+      "storageKey": null
+    },
+    {
+      "kind": "ScalarField",
+      "alias": null,
       "name": "artistNames",
       "args": null,
       "storageKey": null
@@ -115,6 +127,13 @@ const node: ReaderFragment = {
           "name": "displayTimelyAt",
           "args": null,
           "storageKey": null
+        },
+        {
+          "kind": "ScalarField",
+          "alias": null,
+          "name": "endAt",
+          "args": null,
+          "storageKey": null
         }
       ]
     },
@@ -127,6 +146,24 @@ const node: ReaderFragment = {
       "concreteType": "SaleArtwork",
       "plural": false,
       "selections": [
+        {
+          "kind": "LinkedField",
+          "alias": null,
+          "name": "counts",
+          "storageKey": null,
+          "args": null,
+          "concreteType": "SaleArtworkCounts",
+          "plural": false,
+          "selections": [
+            {
+              "kind": "ScalarField",
+              "alias": null,
+              "name": "bidderPositions",
+              "args": null,
+              "storageKey": null
+            }
+          ]
+        },
         {
           "kind": "LinkedField",
           "alias": null,
@@ -198,5 +235,5 @@ const node: ReaderFragment = {
     }
   ]
 };
-(node as any).hash = '7bd5287864a230b68d4fcf6830fba6b9';
+(node as any).hash = 'a907851ea1b00a4ffa7afde73bcf3c85';
 export default node;

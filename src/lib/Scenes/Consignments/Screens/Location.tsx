@@ -1,7 +1,7 @@
 import React from "react"
 import { SearchResults } from "../Components/SearchResults"
 
-import { LocationIcon } from "@artsy/palette"
+import { LocationIcon } from "palette"
 import { Route, View, ViewProperties } from "react-native"
 import NavigatorIOS from "react-native-navigator-ios"
 import { ConsignmentSetup, LocationResult } from "../index"
@@ -9,10 +9,10 @@ import { ConsignmentSetup, LocationResult } from "../index"
 // @ts-ignore STRICTNESS_MIGRATION
 import { stringify } from "qs"
 
-import { Theme } from "@artsy/palette"
-import { Dimensions, NativeModules } from "react-native"
+import { Theme } from "palette"
+import { Dimensions } from "react-native"
+import Config from "react-native-config"
 import { BottomAlignedButton } from "../Components/BottomAlignedButton"
-const { Emission } = NativeModules
 
 interface Props extends ConsignmentSetup, ViewProperties {
   navigator: NavigatorIOS
@@ -43,7 +43,7 @@ export default class Location extends React.Component<Props, State> {
   }
 
   locationSelected = async (result: LocationResult) => {
-    const apiKey = Emission.googleMapsAPIKey
+    const apiKey = Config.GOOGLE_MAPS_API_KEY
     const queryString = stringify({
       key: apiKey,
       placeid: result.id,
@@ -79,7 +79,7 @@ export default class Location extends React.Component<Props, State> {
   // https://developers.google.com/places/
   // https://developers.google.com/places/web-service/details
   searchForQuery = async (query: string) => {
-    const apiKey = Emission.googleMapsAPIKey
+    const apiKey = Config.GOOGLE_MAPS_API_KEY
     const queryString = stringify({
       key: apiKey,
       language: "en",

@@ -1,4 +1,3 @@
-import { Box, color, Flex, Sans, space, Spacer } from "@artsy/palette"
 import { PartnerShows_partner } from "__generated__/PartnerShows_partner.graphql"
 import { useNativeValue } from "lib/Components/StickyTabPage/reanimatedHelpers"
 import {
@@ -9,6 +8,7 @@ import {
 import { TabEmptyState } from "lib/Components/TabEmptyState"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
 import { extractNodes } from "lib/utils/extractNodes"
+import { Box, color, Flex, Sans, space, Spacer } from "palette"
 import React, { useContext, useRef, useState } from "react"
 import { ActivityIndicator, ImageBackground, TouchableWithoutFeedback, View } from "react-native"
 import { createPaginationContainer, graphql, RelayPaginationProp } from "react-relay"
@@ -62,9 +62,9 @@ export const PartnerShows: React.FC<{
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const navRef = useRef(null)
 
-  const recentShows = extractNodes(partner.pastShows)
+  const recentShows = extractNodes(partner.recentShows).filter(show => show.isDisplayable)
 
-  const pastShows = extractNodes(partner.pastShows)
+  const pastShows = extractNodes(partner.pastShows).filter(show => show.isDisplayable)
 
   const sections: StickyTabSection[] = []
 
@@ -151,10 +151,11 @@ export const PartnerShowsFragmentContainer = createPaginationContainer(
         slug
         internalID
         # need to know whether there are any current shows
-        recentShows: showsConnection(status: CURRENT, first: 1) {
+        recentShows: showsConnection(status: CURRENT, first: 10) {
           edges {
             node {
               id
+              isDisplayable
             }
           }
         }
@@ -167,6 +168,7 @@ export const PartnerShowsFragmentContainer = createPaginationContainer(
           }
           edges {
             node {
+              isDisplayable
               id
               name
               slug
@@ -185,15 +187,8 @@ export const PartnerShowsFragmentContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props.partner && props.partner.pastShows
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(props, { count, cursor }) {
       return {

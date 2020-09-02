@@ -1,9 +1,9 @@
-import { Box, color, Flex, Sans } from "@artsy/palette"
 import ChevronIcon from "lib/Icons/ChevronIcon"
 import PinSavedOff from "lib/Icons/PinSavedOff"
 import PinSavedOn from "lib/Icons/PinSavedOn"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
 import { Track, track as _track } from "lib/utils/track"
+import { Box, color, Flex, Sans } from "palette"
 import React, { Component } from "react"
 import { TouchableWithoutFeedback } from "react-native"
 import styled from "styled-components/native"
@@ -60,7 +60,7 @@ export class SavedEventSection extends Component<any> {
     return (
       <>
         <Box mx={2} py={2}>
-          <BMWSponsorship url={sponsoredContentUrl} logoText="Presented in Partnership with BMW" />
+          <BMWSponsorship url={sponsoredContentUrl} logoText="Presented in partnership with BMW" />
         </Box>
         <Box mx={2} mb={2}>
           <SavedBox p={1}>{hasSaves ? hasSavesComponent : hasNoSavesComponent}</SavedBox>

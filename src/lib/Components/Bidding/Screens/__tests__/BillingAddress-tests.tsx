@@ -1,9 +1,9 @@
-import { Sans, Serif } from "@artsy/palette"
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
+import { Sans, Serif } from "palette"
 import React from "react"
 import { TextInput, TouchableWithoutFeedback } from "react-native"
-import * as renderer from "react-test-renderer"
 
-import { Button } from "@artsy/palette"
+import { Button } from "palette"
 import { FakeNavigator } from "../../__tests__/Helpers/FakeNavigator"
 import { BiddingThemeProvider } from "../../Components/BiddingThemeProvider"
 import { BillingAddress } from "../BillingAddress"
@@ -20,7 +20,7 @@ const selectCountry = (component, navigator, country) => {
 }
 
 it("renders without throwing an error", () => {
-  renderer.create(
+  renderWithWrappers(
     <BiddingThemeProvider>
       <BillingAddress />
     </BiddingThemeProvider>
@@ -28,13 +28,13 @@ it("renders without throwing an error", () => {
 })
 
 it("shows an error message for each field", () => {
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <BillingAddress />
     </BiddingThemeProvider>
   )
 
-  component.root.findByType(Button).instance.props.onPress()
+  component.root.findByType(Button).props.onPress()
 
   expect(errorTextComponent(component, "Full name").props.children).toEqual("This field is required")
   expect(errorTextComponent(component, "Address line 1").props.children).toEqual("This field is required")
@@ -47,7 +47,7 @@ it("calls the onSubmit() callback with billing address when ADD BILLING ADDRESS 
   const fakeNavigator = new FakeNavigator()
   const onSubmitMock = jest.fn()
 
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <BillingAddress onSubmit={onSubmitMock} navigator={fakeNavigator as any} />
     </BiddingThemeProvider>
@@ -62,7 +62,7 @@ it("calls the onSubmit() callback with billing address when ADD BILLING ADDRESS 
   textInputComponent(component, "Phone").props.onChangeText("656 333 11111")
   selectCountry(component, fakeNavigator, billingAddress.country)
 
-  component.root.findByType(Button).instance.props.onPress()
+  component.root.findByType(Button).props.onPress()
 
   expect(onSubmitMock).toHaveBeenCalledWith(billingAddress)
 })
@@ -70,7 +70,7 @@ it("calls the onSubmit() callback with billing address when ADD BILLING ADDRESS 
 it("updates the validation for country when coming back from the select country screen", () => {
   const fakeNavigator = new FakeNavigator()
 
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <BillingAddress onSubmit={() => null} navigator={fakeNavigator as any} />
     </BiddingThemeProvider>
@@ -84,7 +84,7 @@ it("updates the validation for country when coming back from the select country 
   textInputComponent(component, "Postal code").props.onChangeText("10013")
   textInputComponent(component, "Phone").props.onChangeText("656 333 11111")
 
-  component.root.findByType(Button).instance.props.onPress()
+  component.root.findByType(Button).props.onPress()
 
   expect(component.root.findAllByType(Sans)[0].props.children).toEqual("This field is required")
 
@@ -95,7 +95,7 @@ it("updates the validation for country when coming back from the select country 
 })
 
 it("pre-fills the fields if initial billing address is provided", () => {
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <BillingAddress billingAddress={billingAddress} />
     </BiddingThemeProvider>

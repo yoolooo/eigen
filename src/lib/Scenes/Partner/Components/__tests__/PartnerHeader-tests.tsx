@@ -1,9 +1,10 @@
-import { Button, Theme } from "@artsy/palette"
 import { PartnerHeaderTestsQuery } from "__generated__/PartnerHeaderTestsQuery.graphql"
 import { extractText } from "lib/tests/extractText"
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
+import { Button } from "palette"
 import React from "react"
 import { graphql, QueryRenderer } from "react-relay"
-import ReactTestRenderer, { act } from "react-test-renderer"
+import { act } from "react-test-renderer"
 import { createMockEnvironment } from "relay-test-utils"
 import { PartnerHeaderContainer as PartnerHeader } from "../PartnerHeader"
 
@@ -24,11 +25,7 @@ describe("PartnerHeader", () => {
       variables={{}}
       render={({ props, error }) => {
         if (props?.partner) {
-          return (
-            <Theme>
-              <PartnerHeader partner={props.partner} />
-            </Theme>
-          )
+          return <PartnerHeader partner={props.partner} />
         } else if (error) {
           console.log(error)
         }
@@ -37,7 +34,7 @@ describe("PartnerHeader", () => {
   )
 
   it("renders artwork counts", async () => {
-    const tree = ReactTestRenderer.create(<TestRenderer />)
+    const tree = renderWithWrappers(<TestRenderer />)
     act(() => {
       env.mock.resolveMostRecentOperation({
         errors: [],
@@ -47,11 +44,11 @@ describe("PartnerHeader", () => {
       })
     })
 
-    expect(extractText(tree.root)).toContain("1.2k Works for sale")
+    expect(extractText(tree.root)).toContain("1.2k works")
   })
 
   it("renders the partner name", async () => {
-    const tree = ReactTestRenderer.create(<TestRenderer />)
+    const tree = renderWithWrappers(<TestRenderer />)
     act(() => {
       env.mock.resolveMostRecentOperation({
         errors: [],
@@ -65,7 +62,7 @@ describe("PartnerHeader", () => {
   })
 
   it("renders the follow button", async () => {
-    const tree = ReactTestRenderer.create(<TestRenderer />)
+    const tree = renderWithWrappers(<TestRenderer />)
     act(() => {
       env.mock.resolveMostRecentOperation({
         errors: [],

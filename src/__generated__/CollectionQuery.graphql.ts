@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-/* @relayHash 784fcf7209f976f3fa97c1c5bdf7410f */
+/* @relayHash 9d9de680b7c128e2c9efa8646b2026ea */
 
 import { ConcreteRequest } from "relay-runtime";
 import { FragmentRefs } from "relay-runtime";
@@ -51,15 +51,20 @@ fragment ArtworkGridItem_artwork on Artwork {
   date
   saleMessage
   slug
+  internalID
   artistNames
   href
   sale {
     isAuction
     isClosed
     displayTimelyAt
+    endAt
     id
   }
   saleArtwork {
+    counts {
+      bidderPositions
+    }
     currentBid {
       display
     }
@@ -354,11 +359,18 @@ v9 = {
 v10 = {
   "kind": "ScalarField",
   "alias": null,
-  "name": "href",
+  "name": "internalID",
   "args": null,
   "storageKey": null
 },
 v11 = {
+  "kind": "ScalarField",
+  "alias": null,
+  "name": "href",
+  "args": null,
+  "storageKey": null
+},
+v12 = {
   "kind": "LinkedField",
   "alias": null,
   "name": "image",
@@ -376,7 +388,7 @@ v11 = {
     }
   ]
 },
-v12 = {
+v13 = {
   "kind": "Literal",
   "name": "aggregations",
   "value": [
@@ -647,6 +659,7 @@ return {
                         "args": null,
                         "storageKey": null
                       },
+                      (v10/*: any*/),
                       {
                         "kind": "ScalarField",
                         "alias": null,
@@ -654,7 +667,7 @@ return {
                         "args": null,
                         "storageKey": null
                       },
-                      (v10/*: any*/),
+                      (v11/*: any*/),
                       {
                         "kind": "LinkedField",
                         "alias": null,
@@ -685,6 +698,13 @@ return {
                             "args": null,
                             "storageKey": null
                           },
+                          {
+                            "kind": "ScalarField",
+                            "alias": null,
+                            "name": "endAt",
+                            "args": null,
+                            "storageKey": null
+                          },
                           (v2/*: any*/)
                         ]
                       },
@@ -697,6 +717,24 @@ return {
                         "concreteType": "SaleArtwork",
                         "plural": false,
                         "selections": [
+                          {
+                            "kind": "LinkedField",
+                            "alias": null,
+                            "name": "counts",
+                            "storageKey": null,
+                            "args": null,
+                            "concreteType": "SaleArtworkCounts",
+                            "plural": false,
+                            "selections": [
+                              {
+                                "kind": "ScalarField",
+                                "alias": null,
+                                "name": "bidderPositions",
+                                "args": null,
+                                "storageKey": null
+                              }
+                            ]
+                          },
                           {
                             "kind": "LinkedField",
                             "alias": null,
@@ -845,13 +883,7 @@ return {
                 "concreteType": "Artist",
                 "plural": true,
                 "selections": [
-                  {
-                    "kind": "ScalarField",
-                    "alias": null,
-                    "name": "internalID",
-                    "args": null,
-                    "storageKey": null
-                  },
+                  (v10/*: any*/),
                   (v2/*: any*/),
                   (v3/*: any*/),
                   (v9/*: any*/),
@@ -862,7 +894,7 @@ return {
                     "args": null,
                     "storageKey": null
                   },
-                  (v10/*: any*/),
+                  (v11/*: any*/),
                   {
                     "kind": "ScalarField",
                     "alias": "is_followed",
@@ -891,7 +923,7 @@ return {
                     "args": null,
                     "storageKey": null
                   },
-                  (v11/*: any*/)
+                  (v12/*: any*/)
                 ]
               },
               (v2/*: any*/)
@@ -965,7 +997,7 @@ return {
                     "name": "artworksConnection",
                     "storageKey": "artworksConnection(aggregations:[\"TOTAL\"],first:3,sort:\"-decayed_merch\")",
                     "args": [
-                      (v12/*: any*/),
+                      (v13/*: any*/),
                       {
                         "kind": "Literal",
                         "name": "first",
@@ -995,7 +1027,7 @@ return {
                             "plural": false,
                             "selections": [
                               (v4/*: any*/),
-                              (v11/*: any*/),
+                              (v12/*: any*/),
                               (v2/*: any*/)
                             ]
                           }
@@ -1011,7 +1043,7 @@ return {
                     "name": "artworksConnection",
                     "storageKey": "artworksConnection(aggregations:[\"TOTAL\"],first:1,sort:\"-decayed_merch\")",
                     "args": [
-                      (v12/*: any*/),
+                      (v13/*: any*/),
                       (v6/*: any*/),
                       (v7/*: any*/)
                     ],
@@ -1036,7 +1068,7 @@ return {
                             "concreteType": "Artwork",
                             "plural": false,
                             "selections": [
-                              (v11/*: any*/),
+                              (v12/*: any*/),
                               (v2/*: any*/)
                             ]
                           }
@@ -1056,7 +1088,7 @@ return {
   "params": {
     "operationKind": "query",
     "name": "CollectionQuery",
-    "id": "f8096b0bc5a25421701aabf0f1d9f7b7",
+    "id": "59a99a295982ce1c37fddf6a717d5918",
     "text": null,
     "metadata": {}
   }

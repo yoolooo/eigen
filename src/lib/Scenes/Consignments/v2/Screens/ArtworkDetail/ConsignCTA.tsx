@@ -1,9 +1,9 @@
-import { BorderBox, Box, Button, Flex, Sans } from "@artsy/palette"
-import { useStoreActions } from "lib/Scenes/Consignments/v2/State/hooks"
+import { AppStore } from "lib/store/AppStore"
+import { BorderBox, Box, Button, Flex, Sans } from "palette"
 import React from "react"
 
 export const ConsignCTA: React.FC = () => {
-  const navActions = useStoreActions(actions => actions.navigation)
+  const navActions = AppStore.actions.consignments.navigation
   return (
     <BorderBox>
       <Flex flexDirection="row" justifyContent="space-between">
@@ -16,7 +16,7 @@ export const ConsignCTA: React.FC = () => {
           </Sans>
         </Box>
         <Box>
-          <Button size="large" onPress={navActions.navigateToConsign}>
+          <Button size="large" onPress={() => navActions.navigateToConsign()}>
             Consign
           </Button>
         </Box>

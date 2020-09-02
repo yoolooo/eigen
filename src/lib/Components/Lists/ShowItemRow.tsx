@@ -1,4 +1,3 @@
-import { Box, Button, color, Flex, Sans, space } from "@artsy/palette"
 import { ShowItemRow_show } from "__generated__/ShowItemRow_show.graphql"
 import { ShowItemRowMutation } from "__generated__/ShowItemRowMutation.graphql"
 import OpaqueImageView from "lib/Components/OpaqueImageView/OpaqueImageView"
@@ -9,6 +8,7 @@ import { exhibitionDates } from "lib/Scenes/Map/exhibitionPeriodParser"
 import { hrefForPartialShow } from "lib/utils/router"
 import { Schema, Track, track as _track } from "lib/utils/track"
 import { debounce } from "lodash"
+import { Box, Button, color, Flex, Sans, space } from "palette"
 import React from "react"
 import { TouchableHighlight, TouchableWithoutFeedback } from "react-native"
 import { commitMutation, createFragmentContainer, graphql, RelayProp } from "react-relay"
@@ -124,7 +124,7 @@ export class ShowItemRow extends React.Component<Props, State> {
 
     const imageURL = mainCoverImageURL || galleryProfileIcon
     return (
-      <Flex flexDirection="row">
+      <Flex flexDirection="row" alignItems="center">
         {!imageURL ? (
           <DefaultImageContainer p={15}>
             <Pin color={color("white100")} pinHeight={30} pinWidth={30} />
@@ -158,7 +158,13 @@ export class ShowItemRow extends React.Component<Props, State> {
           )}
         </Flex>
         {!shouldHideSaveButton && (
-          <Button variant="noOutline" inline onPress={() => this.handleSave()} loading={this.state.isFollowedSaving}>
+          <Button
+            variant={show.is_followed ? "secondaryOutline" : "primaryBlack"}
+            size="small"
+            onPress={() => this.handleSave()}
+            loading={this.state.isFollowedSaving}
+            longestText="Saved"
+          >
             {show.is_followed ? "Saved" : "Save"}
           </Button>
         )}

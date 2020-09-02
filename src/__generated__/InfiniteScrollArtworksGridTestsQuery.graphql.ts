@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-/* @relayHash f0692a391f96ccbbd4117d4c614e3d4f */
+/* @relayHash 9b760bd76a2f9cba7cdfd8681bc6c23b */
 
 import { ConcreteRequest } from "relay-runtime";
 import { FragmentRefs } from "relay-runtime";
@@ -42,15 +42,20 @@ export type InfiniteScrollArtworksGridTestsQueryRawResponse = {
                 readonly title: string | null;
                 readonly date: string | null;
                 readonly saleMessage: string | null;
+                readonly internalID: string;
                 readonly artistNames: string | null;
                 readonly href: string | null;
                 readonly sale: ({
                     readonly isAuction: boolean | null;
                     readonly isClosed: boolean | null;
                     readonly displayTimelyAt: string | null;
+                    readonly endAt: string | null;
                     readonly id: string | null;
                 }) | null;
                 readonly saleArtwork: ({
+                    readonly counts: ({
+                        readonly bidderPositions: number | null;
+                    }) | null;
                     readonly currentBid: ({
                         readonly display: string | null;
                     }) | null;
@@ -100,15 +105,20 @@ fragment ArtworkGridItem_artwork on Artwork {
   date
   saleMessage
   slug
+  internalID
   artistNames
   href
   sale {
     isAuction
     isClosed
     displayTimelyAt
+    endAt
     id
   }
   saleArtwork {
+    counts {
+      bidderPositions
+    }
     currentBid {
       display
     }
@@ -334,6 +344,13 @@ return {
                   {
                     "kind": "ScalarField",
                     "alias": null,
+                    "name": "internalID",
+                    "args": null,
+                    "storageKey": null
+                  },
+                  {
+                    "kind": "ScalarField",
+                    "alias": null,
                     "name": "artistNames",
                     "args": null,
                     "storageKey": null
@@ -375,6 +392,13 @@ return {
                         "args": null,
                         "storageKey": null
                       },
+                      {
+                        "kind": "ScalarField",
+                        "alias": null,
+                        "name": "endAt",
+                        "args": null,
+                        "storageKey": null
+                      },
                       (v3/*: any*/)
                     ]
                   },
@@ -387,6 +411,24 @@ return {
                     "concreteType": "SaleArtwork",
                     "plural": false,
                     "selections": [
+                      {
+                        "kind": "LinkedField",
+                        "alias": null,
+                        "name": "counts",
+                        "storageKey": null,
+                        "args": null,
+                        "concreteType": "SaleArtworkCounts",
+                        "plural": false,
+                        "selections": [
+                          {
+                            "kind": "ScalarField",
+                            "alias": null,
+                            "name": "bidderPositions",
+                            "args": null,
+                            "storageKey": null
+                          }
+                        ]
+                      },
                       {
                         "kind": "LinkedField",
                         "alias": null,
@@ -439,7 +481,7 @@ return {
   "params": {
     "operationKind": "query",
     "name": "InfiniteScrollArtworksGridTestsQuery",
-    "id": "f69533b9c6b8aeed2cd637919bf1ccb3",
+    "id": "ee42721ebfff43c1a4ce00531314ec74",
     "text": null,
     "metadata": {}
   }

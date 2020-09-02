@@ -39,26 +39,20 @@
 #import <Emission/ARNotificationsManager.h>
 #import <React/RCTScrollView.h>
 
-// This should match the value in "BottomTabsIcon.tsx"
-static const CGFloat ICON_HEIGHT = 52;
-// +1 for the separator
-static const CGFloat ARBottomTabsHeight = ICON_HEIGHT + 1;
+#import "ARAugmentedFloorBasedVIRViewController.h"
+#import "ARAugmentedVIRSetupViewController.h"
 
 @interface ARTopMenuViewController () <ARTabViewDelegate>
-@property (readwrite, nonatomic, strong) NSArray *constraintsForButtons;
-
-@property (readwrite, nonatomic, assign) BOOL hidesToolbarMenu;
-
-@property (readwrite, nonatomic, strong) NSLayoutConstraint *tabContentViewTopConstraint;
-@property (readwrite, nonatomic, strong) NSLayoutConstraint *tabBottomConstraint;
 
 @property (readwrite, nonatomic, strong) ARTopMenuNavigationDataSource *navigationDataSource;
-@property (readwrite, nonatomic, strong) UIView *tabContainer;
-@property (readwrite, nonatomic, strong) UIViewController *buttonController;
 
 @property (readwrite, nonatomic, assign) NSString * currentTab;
 
 @property (readonly, nonatomic, strong) ArtsyEcho *echo;
+
+// we need to wait for the view to load before we push a deep link VC on startup
+@property (readwrite, nonatomic, strong) NSMutableArray<NSDictionary*> *pushQueue;
+@property (readwrite, nonatomic, assign) BOOL didLoad;
 @end
 
 static ARTopMenuViewController *_sharedManager = nil;
@@ -78,6 +72,18 @@ static ARTopMenuViewController *_sharedManager = nil;
     _sharedManager = nil;
 }
 
+- (instancetype)init {
+    self = [super init];
+    if (!self) {
+        return self;
+    }
+
+    _didLoad = NO;
+    _pushQueue = [[NSMutableArray alloc] init];
+
+    return self;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -88,14 +94,6 @@ static ARTopMenuViewController *_sharedManager = nil;
 
     self.navigationDataSource = _navigationDataSource ?: [[ARTopMenuNavigationDataSource alloc] init];
 
-    // TODO: Turn into custom view?
-
-    UIView *tabContainer = [[UIView alloc] init];
-
-    self.tabContainer = tabContainer;
-    self.tabContainer.backgroundColor = [UIColor whiteColor];
-    [self.view addSubview:tabContainer];
-
     ARTabContentView *tabContentView = [[ARTabContentView alloc] initWithFrame:CGRectZero
                                                             hostViewController:self
                                                                       delegate:self
@@ -103,26 +101,9 @@ static ARTopMenuViewController *_sharedManager = nil;
 
     _tabContentView = tabContentView;
     [self.view addSubview:tabContentView];
-
-    // Layout
-    self.tabContentViewTopConstraint = [tabContentView alignTopEdgeWithView:self.view predicate:@"0"];
-    [tabContentView alignLeading:@"0" trailing:@"0" toView:self.view];
-    [tabContentView constrainWidthToView:self.view predicate:@"0"];
-    [tabContentView constrainBottomSpaceToView:self.tabContainer predicate:@"0"];
-
-    [tabContainer constrainHeight:@(ARBottomTabsHeight).stringValue];
-    [tabContainer alignLeading:@"0" trailing:@"0" toView:self.view];
-    self.tabBottomConstraint = [tabContainer alignBottomEdgeWithView:self.view predicate:@"0"];
-
-
-    self.buttonController = [[ARComponentViewController alloc] initWithEmission:nil
-                                                                     moduleName:@"BottomTabs"
-                                                              initialProperties:@{}];
-    
+    [tabContentView alignToView:self.view];
     self.currentTab = [ARTabType home];
     [self.tabContentView forceSetCurrentTab:[ARTabType home] animated:NO];
-    [tabContainer addSubview:self.buttonController.view];
-    [self.buttonController.view alignToView:tabContainer];
 
     // Ensure it's created now and started listening for keyboard changes.
     // TODO Ideally this pod would start listening from launch of the app, so we don't need to rely on this one but can
@@ -131,55 +112,24 @@ static ARTopMenuViewController *_sharedManager = nil;
 
     [self registerWithSwitchBoard:ARSwitchBoard.sharedInstance];
 
-    if ([[NSUserDefaults standardUserDefaults] integerForKey:AROnboardingUserProgressionStage] == AROnboardingStageOnboarding) {
-        [self fadeInFromOnboarding];
-    }
+    self.didLoad = YES;
+    __weak typeof(self) wself = self;
+    dispatch_async(dispatch_get_main_queue(), ^() {
+        __strong typeof(self) sself = wself;
+        if (!sself) {
+            return;
+        }
+        while (sself.pushQueue.count > 0) {
+            NSDictionary *item = [sself.pushQueue firstObject];
+            [sself.pushQueue removeObjectAtIndex:0];
+            UIViewController* viewController = [item valueForKey:@"viewController"];
+            void (^completion)(void) = [item valueForKey:@"completion"];
+
+            [sself pushViewController:viewController animated:NO completion:completion];
+        }
+    });
 }
 
-- (void)fadeInFromOnboarding
-{
-    UIView *done = [[UIView alloc] init];
-    done.backgroundColor = [UIColor blackColor];
-
-    UIImageView *spinner = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"onboardingspinner"]];
-
-    UILabel *label = [[UILabel alloc] init];
-    label.text = @"Personalizing your Artsy experience";
-    label.font = [UIFont serifFontWithSize:20.0];
-    label.textColor = [UIColor whiteColor];
-    label.textAlignment = NSTextAlignmentCenter;
-
-    [done addSubview:spinner];
-    [done addSubview:label];
-    [self.view addSubview:done];
-
-    [done alignTop:@"0" leading:@"0" bottom:@"0" trailing:@"0" toView:self.view];
-    [spinner alignCenterXWithView:done predicate:@"0"];
-    [spinner alignCenterYWithView:done predicate:@"-50"];
-    [spinner constrainWidth:@"100" height:@"100"];
-    [label constrainTopSpaceToView:spinner predicate:@"20"];
-    [label alignCenterXWithView:done predicate:@"0"];
-    [label constrainWidthToView:done predicate:@"0"];
-    [label constrainHeight:@"100"];
-    [spinner ar_startSpinningIndefinitely];
-
-    done.alpha = 0.95;
-
-    [UIView animateWithDuration:0.4 delay:0.3 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        done.alpha = 1;
-    } completion:^(BOOL finished) {
-        [UIView animateWithDuration:1.2 delay:1.2 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            spinner.alpha = 0;
-            label.alpha = 0;
-            done.alpha = 0;
-        } completion:^(BOOL finished) {
-            [done removeFromSuperview];
-            [[NSUserDefaults standardUserDefaults] setInteger:AROnboardingStageOnboarded forKey:AROnboardingUserProgressionStage];
-            ARAppNotificationsDelegate *remoteNotificationsDelegate = [[JSDecoupledAppDelegate sharedAppDelegate] remoteNotificationsDelegate];
-            [remoteNotificationsDelegate registerForDeviceNotificationsWithContext:ARAppNotificationsRequestContextOnboarding];
-        }];
-    }];
-}
 
 - (void)registerWithSwitchBoard:(ARSwitchBoard *)switchboard
 {
@@ -224,22 +174,6 @@ static ARTopMenuViewController *_sharedManager = nil;
 }
 
 #pragma mark - ARMenuAwareViewController
-
-- (void)hideToolbar:(BOOL)hideToolbar animated:(BOOL)animated
-{
-    CGFloat bottomMargin = [self bottomMargin];
-    CGFloat newConstant = hideToolbar ? CGRectGetHeight(self.tabContainer.frame) : bottomMargin;
-    CGFloat oldConstant = self.tabBottomConstraint.constant;
-    BOOL shouldChange = newConstant != oldConstant;
-    if (!shouldChange) { return; }
-
-    [UIView animateIf:animated duration:ARAnimationQuickDuration:^{
-        self.tabBottomConstraint.constant = newConstant;
-
-        [self.view setNeedsLayout];
-        [self.view layoutIfNeeded];
-    }];
-}
 
 - (BOOL)hidesNavigationButtons
 {
@@ -312,6 +246,23 @@ static ARTopMenuViewController *_sharedManager = nil;
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^__nullable)(void))completion
 {
     NSAssert(viewController != nil, @"Attempt to push a nil view controller.");
+
+    if(!self.didLoad) {
+        NSMutableDictionary *queueItem = [[NSMutableDictionary alloc] init];
+        [queueItem setValue:viewController forKey:@"viewController"];
+        if (completion) {
+            [queueItem setValue:completion forKey:@"completion"];
+        }
+        [self.pushQueue addObject:queueItem];
+        return;
+    }
+
+    if ([viewController isKindOfClass:ARAugmentedFloorBasedVIRViewController.class] || [viewController isKindOfClass:ARAugmentedVIRSetupViewController.class]) {
+        viewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        viewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+        [self presentViewController:viewController animated:animated completion:completion];
+        return;
+    }
 
     if ([self.class shouldPresentViewControllerAsModal:viewController]) {
         // iOS 13 introduced a new modal presentation style that are cards. They look cool!
@@ -399,7 +350,7 @@ static ARTopMenuViewController *_sharedManager = nil;
 
 - (void)tabContentView:(ARTabContentView *)tabContentView didChangeToTab:(NSString *)tabType
 {
-    [[[AREmission sharedInstance] notificationsManagerModule] selectedTabChanged:tabType];
+    [[AREmission sharedInstance] updateState:@{[ARStateKey selectedTab]: tabType}];
 }
 
 - (NSObject *_Nullable)firstScrollToTopScrollViewFromRootView:(UIView *)initialView

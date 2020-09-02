@@ -2,12 +2,12 @@ jest.mock("lib/Components/Bidding/Screens/ConfirmBid/PriceSummary", () => ({
   PriceSummary: () => null,
 }))
 
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
 import React from "react"
 import "react-native"
-import * as renderer from "react-test-renderer"
 import { FakeNavigator } from "../../__tests__/Helpers/FakeNavigator"
 
-import { Button } from "@artsy/palette"
+import { Button } from "palette"
 import Spinner from "../../../../Components/Spinner"
 
 import { SelectMaxBid_me } from "__generated__/SelectMaxBid_me.graphql"
@@ -75,7 +75,7 @@ beforeEach(() => {
 })
 
 it("renders without throwing an error", () => {
-  renderer.create(
+  renderWithWrappers(
     <BiddingThemeProvider>
       <SelectMaxBid me={Me} sale_artwork={SaleArtwork} navigator={fakeNavigator as any} relay={fakeRelay as any} />
     </BiddingThemeProvider>
@@ -83,22 +83,23 @@ it("renders without throwing an error", () => {
 })
 
 it("shows a spinner while fetching new bid increments", () => {
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <SelectMaxBid me={Me} sale_artwork={SaleArtwork} navigator={fakeNavigator as any} relay={fakeRelay as any} />
   )
 
-  component.root.instance.setState({ isRefreshingSaleArtwork: true })
+  const selectBidComponent = component.root.findByType(SelectMaxBid)
+  selectBidComponent.instance.setState({ isRefreshingSaleArtwork: true })
 
   expect(component.root.findByType(Spinner)).toBeDefined()
 })
 
 it("refetches in next component's refreshSaleArtwork", () => {
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <SelectMaxBid me={Me} sale_artwork={SaleArtwork} navigator={fakeNavigator as any} relay={fakeRelay as any} />
     </BiddingThemeProvider>
   )
-  component.root.findByType(Button).instance.props.onPress()
+  component.root.findByType(Button).props.onPress()
   const nextScreen = fakeNavigator.nextStep()
 
   nextScreen.root.findByProps({ nextScreen: true }).instance.props.refreshSaleArtwork()
@@ -110,12 +111,12 @@ it("refetches in next component's refreshSaleArtwork", () => {
 })
 
 it("removes the spinner once the refetch is complete", () => {
-  const component = renderer.create(
+  const component = renderWithWrappers(
     <BiddingThemeProvider>
       <SelectMaxBid me={Me} sale_artwork={SaleArtwork} navigator={fakeNavigator as any} relay={fakeRelay as any} />
     </BiddingThemeProvider>
   )
-  component.root.findByType(Button).instance.props.onPress()
+  component.root.findByType(Button).props.onPress()
   const nextScreen = fakeNavigator.nextStep()
   fakeRelay.refetch.mockImplementationOnce((_params, _renderVars, callback) => {
     callback()

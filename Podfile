@@ -18,36 +18,15 @@ require 'json'
 require 'fileutils'
 
 # We need to scope the side-effects of downloading Emission's NPM podspecs to
-# only cases where we are actually installing pods (and not, for example,
-# fetching a key from CocoaPods-Keys). Not pretty, but it works!
+# only cases where we are actually installing pods.
 installing_pods = ARGV.include?('install') || ARGV.include?('update')
 
 system 'yarn install --ignore-engines' if installing_pods
 
-# Note: These should be reflected _accurately_ in the environment of
-#       the continuous build server.
-
-plugin 'cocoapods-keys',
-       project: 'Artsy',
-       target: 'Artsy',
-       keys: [
-         'ArtsyAPIClientSecret',      # Authing to the Artsy API
-         'ArtsyAPIClientKey',         #
-         'ArtsyFacebookAppID',        # Supporting FB Login
-         'SegmentProductionWriteKey', # Analytics
-         'SegmentDevWriteKey',        #
-         'ArtsyEchoProductionToken',  # Runtime behavior changes
-         'SentryProductionDSN',       # Crash Logging
-         'SentryStagingDSN',          #
-         'GoogleMapsAPIKey', # Consignment Location Lookup,
-         'MapBoxAPIClientKey', # Used in local discovery
-         'SailthruKey'
-       ]
-
 target 'Artsy' do
   # Networking
-  pod 'AFNetworking', '~> 2.5'
-  pod 'AFOAuth1Client', git: 'https://github.com/lxcid/AFOAuth1Client.git', tag: '0.4.0'
+  pod 'AFNetworking', '~> 2.5', subspecs: ['Reachability', 'Serialization', 'Security', 'NSURLSession', 'NSURLConnection']
+  pod 'AFOAuth1Client', git: 'https://github.com/artsy/AFOAuth1Client.git', tag: '0.4.0-subspec-fix'
   pod 'AFNetworkActivityLogger'
   pod 'SDWebImage', '>= 3.7.2' # 3.7.2 contains a fix that allows you to not force decoding each image, which uses lots of memory
 
@@ -62,7 +41,6 @@ target 'Artsy' do
   pod 'Mantle', '~> 1.5.6'
   pod 'MMMarkdown'
   pod 'NPKeyboardLayoutGuide'
-  pod 'ReactiveObjC'
   pod 'UICKeyChainStore'
   pod 'MARKRangeSlider'
   pod 'EDColor'
@@ -128,29 +106,31 @@ target 'Artsy' do
   pod 'react-native-cameraroll', path: 'node_modules/@react-native-community/cameraroll'
   pod 'react-native-netinfo', path: 'node_modules/@react-native-community/netinfo'
   pod 'react-native-geolocation', path: 'node_modules/@react-native-community/geolocation'
+  pod 'react-native-safe-area-context', path: 'node_modules/react-native-safe-area-context'
   pod 'react-native-navigator-ios', path: 'node_modules/react-native-navigator-ios'
   pod 'RNReanimated', path: 'node_modules/react-native-reanimated'
   pod 'RNCAsyncStorage', path: 'node_modules/@react-native-community/async-storage'
   pod 'RNCPicker', path: 'node_modules/@react-native-community/picker'
   pod 'BVLinearGradient', path: './node_modules/react-native-linear-gradient'
   pod 'RNImageCropPicker', path: './node_modules/react-native-image-crop-picker/RNImageCropPicker.podspec'
+  # TODO: Remove the `.podspec` files from these paths
+  pod 'react-native-config', path: 'node_modules/react-native-config'
 
   # For Stripe integration with Emission. Using Ash's fork for this issue: https://github.com/tipsi/tipsi-stripe/issues/408
   pod 'Pulley', git: 'https://github.com/l2succes/Pulley.git', branch: 'master'
 
   # Facebook
-  pod 'FBSDKCoreKit', '~> 4.33'
-  pod 'FBSDKLoginKit', '~> 4.33'
+  pod 'FBSDKCoreKit', '~> 7.1.1'
+  pod 'FBSDKLoginKit', '~> 7.1.1'
 
   # Analytics
   pod 'Analytics'
-  pod 'ARAnalytics', subspecs: %w[Segmentio DSL]
+  pod 'ARAnalytics', subspecs: %w[Segmentio]
   pod 'SailthruMobile'
 
   # Developer Pods
   pod 'DHCShakeNotifier'
   pod 'ORKeyboardReactingApplication'
-  pod 'VCRURLConnection'
 
   # Swift pods 🎉
   pod 'Then'
@@ -187,7 +167,7 @@ post_install do |installer|
 
   # Note: we don't want Echo.json checked in, so Artsy staff download it at pod install time. We
   # use a stubbed copy for OSS developers.
-  echo_key = `bundle exec pod keys get ArtsyEchoProductionToken Artsy`
+  echo_key = `dotenv -f ".env.shared,.env.ci env" | grep ARTSY_ECHO_PRODUCTION_TOKEN | awk -F "=" {'print $2'}`
   if echo_key.length > 1 # OSS contributors have "-" as their key
     puts 'Updating Echo...'
     `make update_echo &> /dev/null`

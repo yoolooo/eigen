@@ -1,9 +1,9 @@
-import { Box, Spacer } from "@artsy/palette"
 import { ArtistNotableWorksRail_artist } from "__generated__/ArtistNotableWorksRail_artist.graphql"
 import { AboveTheFoldFlatList } from "lib/Components/AboveTheFoldFlatList"
 import { ArtworkTileRailCard } from "lib/Components/ArtworkTileRail"
 import { SectionTitle } from "lib/Components/SectionTitle"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
+import { Box, Spacer } from "palette"
 import React from "react"
 import { createFragmentContainer, graphql } from "react-relay"
 import styled from "styled-components/native"
@@ -68,12 +68,11 @@ const ArtistNotableWorksRail: React.FC<ArtistNotableWorksRailProps> = ({ artist 
             return (
               <ArtworkTileRailCard
                 imageURL={item?.node?.image?.imageURL}
-                artistNames={item?.node?.title}
+                imageAspectRatio={item?.node?.image?.aspectRatio}
+                imageSize="large"
+                title={item?.node?.title}
                 saleMessage={saleMessage(item)}
                 key={item?.node?.internalID}
-                useLargeImageSize
-                useNormalFontWeight
-                useLighterFont
                 onPress={() => {
                   handleNavigation(item?.node?.slug)
                 }}
@@ -101,6 +100,7 @@ export const ArtistNotableWorksRailFragmentContainer = createFragmentContainer(A
             id
             image {
               imageURL
+              aspectRatio
             }
             saleMessage
             saleArtwork {

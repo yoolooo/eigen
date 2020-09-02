@@ -1,9 +1,9 @@
-import { Box, Button, Flex, InfoCircleIcon, Join, Sans, Spacer } from "@artsy/palette"
-import { useStoreActions } from "lib/Scenes/Consignments/v2/State/hooks"
+import { AppStore } from "lib/store/AppStore"
+import { Box, Button, Flex, InfoCircleIcon, Join, Sans, Spacer } from "palette"
 import React from "react"
 
 export const AuctionResults: React.FC = () => {
-  const navActions = useStoreActions(actions => actions.navigation)
+  const navActions = AppStore.actions.consignments.navigation
   return (
     <Join separator={<Spacer my={1} />}>
       <Flex flexDirection="row">
@@ -18,7 +18,7 @@ export const AuctionResults: React.FC = () => {
       <AuctionWork />
       <AuctionWork />
 
-      <Button variant="secondaryGray" onPress={navActions.navigateToArtist}>
+      <Button variant="secondaryGray" onPress={() => navActions.navigateToArtist()}>
         Browse all auction works
       </Button>
     </Join>

@@ -2,11 +2,11 @@ jest.mock("lib/Components/Bidding/Screens/ConfirmBid/PriceSummary", () => ({
   PriceSummary: () => null,
 }))
 
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
 import React from "react"
 import "react-native"
-import * as renderer from "react-test-renderer"
 
-import { Button } from "@artsy/palette"
+import { Button } from "palette"
 import relay from "react-relay"
 import { Checkbox } from "../Components/Checkbox"
 import { MaxBidPicker } from "../Components/MaxBidPicker"
@@ -27,7 +27,6 @@ jest.mock("tipsi-stripe", () => ({
 // @ts-ignore STRICTNESS_MIGRATION
 import stripe from "tipsi-stripe"
 
-import { Theme } from "@artsy/palette"
 import { BidderPositionQueryResponse } from "__generated__/BidderPositionQuery.graphql"
 import { waitUntil } from "lib/tests/waitUntil"
 
@@ -52,20 +51,18 @@ beforeEach(() => {
 })
 
 it("allows bidders with a qualified credit card to bid", async () => {
-  let screen = renderer.create(
-    <Theme>
-      <SelectMaxBid
-        me={Me.qualifiedUser as any}
-        sale_artwork={SaleArtwork as any}
-        navigator={fakeNavigator as any}
-        // @ts-ignore STRICTNESS_MIGRATION
-        relay={fakeRelay as any}
-      />
-    </Theme>
+  let screen = renderWithWrappers(
+    <SelectMaxBid
+      me={Me.qualifiedUser as any}
+      sale_artwork={SaleArtwork as any}
+      navigator={fakeNavigator as any}
+      // @ts-ignore STRICTNESS_MIGRATION
+      relay={fakeRelay as any}
+    />
   )
 
   screen.root.findByType(MaxBidPicker).instance.props.onValueChange(null, 2)
-  screen.root.findAllByType(Button)[0].instance.props.onPress()
+  screen.root.findAllByType(Button)[0].props.onPress()
 
   screen = fakeNavigator.nextStep()
   expect(getTitleText(screen)).toEqual("Confirm your bid")
@@ -79,7 +76,7 @@ it("allows bidders with a qualified credit card to bid", async () => {
   }) as any
 
   screen.root.findByType(Checkbox).instance.props.onPress()
-  screen.root.findAllByType(Button)[1].instance.props.onPress()
+  screen.root.findAllByType(Button)[1].props.onPress()
 
   await waitUntil(() => fakeNavigator.stackSize() === 2)
 
@@ -88,20 +85,18 @@ it("allows bidders with a qualified credit card to bid", async () => {
 })
 
 it("allows bidders without a qualified credit card to register a card and bid", async () => {
-  let screen = renderer.create(
-    <Theme>
-      <SelectMaxBid
-        me={Me.unqualifiedUser as any}
-        sale_artwork={SaleArtwork as any}
-        navigator={fakeNavigator as any}
-        // @ts-ignore STRICTNESS_MIGRATION
-        relay={fakeRelay as any}
-      />
-    </Theme>
+  let screen = renderWithWrappers(
+    <SelectMaxBid
+      me={Me.unqualifiedUser as any}
+      sale_artwork={SaleArtwork as any}
+      navigator={fakeNavigator as any}
+      // @ts-ignore STRICTNESS_MIGRATION
+      relay={fakeRelay as any}
+    />
   )
 
   screen.root.findByType(MaxBidPicker).instance.props.onValueChange(null, 2)
-  screen.root.findAllByType(Button)[0].instance.props.onPress()
+  screen.root.findAllByType(Button)[0].props.onPress()
 
   screen = fakeNavigator.nextStep()
 
@@ -128,7 +123,7 @@ it("allows bidders without a qualified credit card to register a card and bid", 
   })
 
   screen.root.findByType(Checkbox).instance.props.onPress()
-  await screen.root.findAllByType(Button)[1].instance.props.onPress()
+  await screen.root.findAllByType(Button)[1].props.onPress()
 
   expect(stripe.createTokenWithCard).toHaveBeenCalledWith({
     ...creditCardFormParams,

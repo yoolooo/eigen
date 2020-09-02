@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-/* @relayHash 6e8b91fcb335a078df286ee87d25c1c0 */
+/* @relayHash 08445529d790dae8108ad7618184e00a */
 
 import { ConcreteRequest } from "relay-runtime";
 import { FragmentRefs } from "relay-runtime";
@@ -15,13 +15,16 @@ export type ArtistSeriesMoreSeriesTestsQueryResponse = {
 export type ArtistSeriesMoreSeriesTestsQueryRawResponse = {
     readonly artistSeries: ({
         readonly artist: ReadonlyArray<({
+            readonly internalID: string;
             readonly artistSeriesConnection: ({
+                readonly totalCount: number;
                 readonly edges: ReadonlyArray<({
                     readonly node: ({
                         readonly slug: string;
                         readonly internalID: string;
                         readonly title: string;
-                        readonly forSaleArtworksCount: number;
+                        readonly featured: boolean;
+                        readonly artworksCountMessage: string | null;
                         readonly image: ({
                             readonly url: string | null;
                         }) | null;
@@ -51,13 +54,16 @@ query ArtistSeriesMoreSeriesTestsQuery {
 }
 
 fragment ArtistSeriesMoreSeries_artist on Artist {
+  internalID
   artistSeriesConnection(first: 4) {
+    totalCount
     edges {
       node {
         slug
         internalID
         title
-        forSaleArtworksCount
+        featured
+        artworksCountMessage
         image {
           url
         }
@@ -81,7 +87,14 @@ v1 = [
     "name": "size",
     "value": 1
   }
-];
+],
+v2 = {
+  "kind": "ScalarField",
+  "alias": null,
+  "name": "internalID",
+  "args": null,
+  "storageKey": null
+};
 return {
   "kind": "Request",
   "fragment": {
@@ -143,6 +156,7 @@ return {
             "concreteType": "Artist",
             "plural": true,
             "selections": [
+              (v2/*: any*/),
               {
                 "kind": "LinkedField",
                 "alias": null,
@@ -158,6 +172,13 @@ return {
                 "concreteType": "ArtistSeriesConnection",
                 "plural": false,
                 "selections": [
+                  {
+                    "kind": "ScalarField",
+                    "alias": null,
+                    "name": "totalCount",
+                    "args": null,
+                    "storageKey": null
+                  },
                   {
                     "kind": "LinkedField",
                     "alias": null,
@@ -183,13 +204,7 @@ return {
                             "args": null,
                             "storageKey": null
                           },
-                          {
-                            "kind": "ScalarField",
-                            "alias": null,
-                            "name": "internalID",
-                            "args": null,
-                            "storageKey": null
-                          },
+                          (v2/*: any*/),
                           {
                             "kind": "ScalarField",
                             "alias": null,
@@ -200,7 +215,14 @@ return {
                           {
                             "kind": "ScalarField",
                             "alias": null,
-                            "name": "forSaleArtworksCount",
+                            "name": "featured",
+                            "args": null,
+                            "storageKey": null
+                          },
+                          {
+                            "kind": "ScalarField",
+                            "alias": null,
+                            "name": "artworksCountMessage",
                             "args": null,
                             "storageKey": null
                           },
@@ -244,7 +266,7 @@ return {
   "params": {
     "operationKind": "query",
     "name": "ArtistSeriesMoreSeriesTestsQuery",
-    "id": "c7f7ec015ad3874bffbb2d988acabd0b",
+    "id": "4a1ea54bc0f5f737f843598f4c936792",
     "text": null,
     "metadata": {}
   }

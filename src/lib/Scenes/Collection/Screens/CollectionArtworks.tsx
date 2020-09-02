@@ -1,9 +1,10 @@
-import { Box, Separator } from "@artsy/palette"
+import { OwnerType } from "@artsy/cohesion"
 import { CollectionArtworks_collection } from "__generated__/CollectionArtworks_collection.graphql"
 import { FilteredArtworkGridZeroState } from "lib/Components/ArtworkGrids/FilteredArtworkGridZeroState"
 import { InfiniteScrollArtworksGridContainer as InfiniteScrollArtworksGrid } from "lib/Components/ArtworkGrids/InfiniteScrollArtworksGrid"
 import { get } from "lib/utils/get"
 import { Schema } from "lib/utils/track"
+import { Box, Separator } from "palette"
 import React, { useContext, useEffect } from "react"
 import { createPaginationContainer, graphql, RelayPaginationProp } from "react-relay"
 import { useTracking } from "react-tracking"
@@ -80,6 +81,9 @@ export const CollectionArtworks: React.SFC<CollectionArtworksProps> = ({ collect
         loadMore={relay.loadMore}
         hasMore={relay.hasMore}
         isLoading={relay.isLoading}
+        contextScreenOwnerType={OwnerType.collection}
+        contextScreenOwnerId={collection.id}
+        contextScreenOwnerSlug={collection.slug}
       />
     </ArtworkGridWrapper>
   ) : null
@@ -151,15 +155,8 @@ export const CollectionArtworksFragmentContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props?.collection?.collectionArtworks
-    },
-    getFragmentVariables(previousVariables, totalCount) {
-      return {
-        ...previousVariables,
-        count: totalCount,
-      }
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {

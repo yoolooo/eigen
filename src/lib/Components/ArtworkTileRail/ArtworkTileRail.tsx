@@ -1,8 +1,8 @@
-import { Spacer } from "@artsy/palette"
 import { ArtworkTileRail_artworksConnection } from "__generated__/ArtworkTileRail_artworksConnection.graphql"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
 import { extractNodes } from "lib/utils/extractNodes"
 import { Schema } from "lib/utils/track"
+import { Spacer } from "palette"
 import React, { useRef } from "react"
 import { FlatList, View } from "react-native"
 import { createFragmentContainer, graphql } from "react-relay"
@@ -59,6 +59,8 @@ export const ArtworkTileRailContainer: React.FC<ArtworkTileRailContainerProps> =
             imageURL={item.image?.imageURL}
             artistNames={item.artistNames}
             saleMessage={item.saleMessage}
+            useSquareAspectRatio
+            imageSize="small"
           />
         )}
         keyExtractor={(item, index) => String(item.image?.imageURL || index)}

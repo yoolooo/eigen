@@ -10,9 +10,6 @@ import * as yaml from "yaml"
 const pr = danger.github.pr
 const bodyAndTitle = (pr.body + pr.title).toLowerCase()
 
-// Custom modifiers for people submitting PRs to be able to say "skip this"
-const acceptedNoTests = bodyAndTitle.includes("#skip_new_tests")
-
 const typescriptOnly = (file: string) => file.includes(".ts")
 const filesOnly = (file: string) => fs.existsSync(file) && fs.lstatSync(file).isFile()
 
@@ -63,29 +60,6 @@ const correspondingTestsForAppFiles = createdAppOnlyFiles.map(f => {
   return `${newPath}/__tests__/${name}`
 })
 
-// New app files should get new test files
-// Allow warning instead of failing if you say "Skip New Tests" inside the body, make it explicit.
-const testFilesThatDontExist = correspondingTestsForAppFiles
-  .filter(f => !f.includes("Index-tests.tsx")) // skip indexes
-  .filter(f => !f.includes("types-tests.ts")) // skip type definitions
-  .filter(f => !f.includes("__stories__")) // skip stories
-  .filter(f => !f.includes("AppRegistry")) // skip registry, kinda untestable
-  .filter(f => !f.includes("Routes")) // skip routes, kinda untestable
-  .filter(f => !f.includes("NativeModules")) // skip modules that are native, they are untestable
-  .filter(f => !f.includes("lib/relay/")) // skip modules that are native, they are untestable
-  .filter(f => !f.includes("fixtures")) // skip modules that are native, they are untestable
-  .filter(f => !fs.existsSync(f))
-
-if (testFilesThatDontExist.length > 0) {
-  const callout = acceptedNoTests ? warn : fail
-  const output = `Missing Test Files:
-
-${testFilesThatDontExist.map(f => `- \`${f}\``).join("\n")}
-
-If these files are supposed to not exist, please update your PR body to include "#skip_new_tests".`
-  callout(output)
-}
-
 const modified = danger.git.modified_files
 const editedFiles = modified.concat(danger.git.created_files)
 const testFiles = editedFiles.filter(f => f?.includes("Tests") && f.match(/\.(swift|m)$/))
@@ -118,21 +92,6 @@ for (const file of devOnlyFiles) {
       "Developer Specific file shouldn't be changed, you can skip by adding #known to the PR body and re-runnning CI"
     )
   }
-}
-
-// Did you make analytics changes? Well you should also include a change to our analytics spec
-const madeAnalyticsChanges = modified.includes("/Artsy/App/ARAppDelegate+Analytics.m")
-const madeAnalyticsSpecsChanges = modified.includes("/Artsy_Tests/Analytics_Tests/ARAppAnalyticsSpec.m")
-if (madeAnalyticsChanges) {
-  if (!madeAnalyticsSpecsChanges) {
-    fail("Analytics changes should have reflected specs changes in ARAppAnalyticsSpec.m")
-  }
-
-  // And note to pay extra attention anyway
-  message('Analytics dict changed, double check for ?: `@""` on new entries to ensure nils don\'t crash the app.')
-  const docs =
-    "https://docs.google.com/spreadsheets/u/1/d/1bLbeOgVFaWzLSjxLOBDNOKs757-zBGoLSM1lIz3OPiI/edit#gid=497747862"
-  message(`Also, double check the [Analytics Eigen schema](${docs}) if the changes are non-trivial.`)
 }
 
 // Ensure the CHANGELOG is set up like we need

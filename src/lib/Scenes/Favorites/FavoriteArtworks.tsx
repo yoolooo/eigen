@@ -6,7 +6,6 @@ import GenericGrid, { GenericGridPlaceholder } from "lib/Components/ArtworkGrids
 import { ZeroState } from "lib/Components/States/ZeroState"
 import { PAGE_SIZE } from "lib/data/constants"
 
-import { Button } from "@artsy/palette"
 import { FavoriteArtworks_me } from "__generated__/FavoriteArtworks_me.graphql"
 import { FavoriteArtworksQuery } from "__generated__/FavoriteArtworksQuery.graphql"
 import { StickyTabPageScrollView } from "lib/Components/StickyTabPage/StickyTabPageScrollView"
@@ -15,6 +14,7 @@ import { defaultEnvironment } from "lib/relay/createEnvironment"
 import { extractNodes } from "lib/utils/extractNodes"
 import { renderWithPlaceholder } from "lib/utils/renderWithPlaceholder"
 import { useScreenDimensions } from "lib/utils/useScreenDimensions"
+import { Button, space } from "palette"
 
 interface Props {
   me: FavoriteArtworks_me
@@ -97,8 +97,8 @@ export class SavedWorks extends Component<Props, State> {
 
     return (
       <StickyTabPageScrollView
+        contentContainerStyle={{ paddingVertical: space(2) }}
         onEndReached={this.loadMore}
-        style={{ paddingTop: 20 }}
         refreshControl={<RefreshControl refreshing={this.state.refreshingFromPull} onRefresh={this.handleRefresh} />}
       >
         <GenericGrid artworks={artworks} isLoading={this.state.fetchingMoreData} />
@@ -134,16 +134,9 @@ const FavoriteArtworksContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       // @ts-ignore STRICTNESS_MIGRATION
       return props.me && props.me.followsAndSaves.artworks
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(_props, { count, cursor }, fragmentVariables) {
       return {

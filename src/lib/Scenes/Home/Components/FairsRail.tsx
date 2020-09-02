@@ -1,8 +1,8 @@
-import { Flex, Sans } from "@artsy/palette"
 import { FairsRail_fairsModule } from "__generated__/FairsRail_fairsModule.graphql"
 import ImageView from "lib/Components/OpaqueImageView/OpaqueImageView"
 import { SectionTitle } from "lib/Components/SectionTitle"
 import Switchboard from "lib/NativeModules/SwitchBoard"
+import { Flex, Sans } from "palette"
 import React, { useImperativeHandle, useRef } from "react"
 import { FlatList, View } from "react-native"
 import { createFragmentContainer, graphql } from "react-relay"
@@ -39,7 +39,7 @@ const FairsRail: React.FC<Props & RailScrollProps> = props => {
   return (
     <View ref={navRef}>
       <Flex pl="2" pr="2">
-        <SectionTitle title="Featured Fairs" subtitle="See works in top art fairs" />
+        <SectionTitle title="Featured fairs" subtitle="See works in top art fairs" />
       </Flex>
 
       <CardRailFlatList<FairItem>
@@ -63,7 +63,9 @@ const FairsRail: React.FC<Props & RailScrollProps> = props => {
               key={result?.slug}
               onPress={() => {
                 tracking.trackEvent(HomeAnalytics.fairThumbnailTapEvent(result?.internalID, result?.slug, index))
-                Switchboard.presentNavigationViewController(navRef.current, `${result?.slug}?entity=fair`)
+                if (result?.slug) {
+                  Switchboard.presentFairViewController(navRef.current, result?.slug)
+                }
               }}
             >
               <View>

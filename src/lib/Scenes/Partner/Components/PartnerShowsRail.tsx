@@ -1,7 +1,7 @@
-import { Sans, Spacer } from "@artsy/palette"
 import { PartnerShowsRail_partner } from "__generated__/PartnerShowsRail_partner.graphql"
 import { extractNodes } from "lib/utils/extractNodes"
 import { isCloseToEdge } from "lib/utils/isCloseToEdge"
+import { Sans, Spacer } from "palette"
 import React, { useState } from "react"
 import { FlatList } from "react-native"
 import { createPaginationContainer, graphql, RelayPaginationProp } from "react-relay"
@@ -14,7 +14,7 @@ const PartnerShowsRail: React.FC<{
   relay: RelayPaginationProp
 }> = ({ partner, relay }) => {
   const [fetchingNextPage, setFetchingNextPage] = useState(false)
-  const currentAndUpcomingShows = extractNodes(partner.currentAndUpcomingShows)
+  const currentAndUpcomingShows = extractNodes(partner.currentAndUpcomingShows).filter(show => show.isDisplayable)
 
   const fetchNextPage = () => {
     if (fetchingNextPage) {
@@ -68,6 +68,7 @@ export const PartnerShowsRailContainer = createPaginationContainer(
           }
           edges {
             node {
+              isDisplayable
               id
               internalID
               slug
@@ -91,15 +92,8 @@ export const PartnerShowsRailContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props.partner && props.partner.currentAndUpcomingShows
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(props, { count, cursor }) {
       return {

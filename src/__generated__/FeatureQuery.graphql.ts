@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-/* @relayHash 21ba1c62782968008bbccef250648b3e */
+/* @relayHash 4502d6a3b2cf59193fb35e0fef3c408e */
 
 import { ConcreteRequest } from "relay-runtime";
 import { FragmentRefs } from "relay-runtime";
@@ -34,15 +34,20 @@ fragment ArtworkGridItem_artwork on Artwork {
   date
   saleMessage
   slug
+  internalID
   artistNames
   href
   sale {
     isAuction
     isClosed
     displayTimelyAt
+    endAt
     id
   }
   saleArtwork {
+    counts {
+      bidderPositions
+    }
     currentBid {
       display
     }
@@ -442,6 +447,13 @@ return {
                                       {
                                         "kind": "ScalarField",
                                         "alias": null,
+                                        "name": "internalID",
+                                        "args": null,
+                                        "storageKey": null
+                                      },
+                                      {
+                                        "kind": "ScalarField",
+                                        "alias": null,
                                         "name": "artistNames",
                                         "args": null,
                                         "storageKey": null
@@ -477,6 +489,13 @@ return {
                                             "args": null,
                                             "storageKey": null
                                           },
+                                          {
+                                            "kind": "ScalarField",
+                                            "alias": null,
+                                            "name": "endAt",
+                                            "args": null,
+                                            "storageKey": null
+                                          },
                                           (v4/*: any*/)
                                         ]
                                       },
@@ -489,6 +508,24 @@ return {
                                         "concreteType": "SaleArtwork",
                                         "plural": false,
                                         "selections": [
+                                          {
+                                            "kind": "LinkedField",
+                                            "alias": null,
+                                            "name": "counts",
+                                            "storageKey": null,
+                                            "args": null,
+                                            "concreteType": "SaleArtworkCounts",
+                                            "plural": false,
+                                            "selections": [
+                                              {
+                                                "kind": "ScalarField",
+                                                "alias": null,
+                                                "name": "bidderPositions",
+                                                "args": null,
+                                                "storageKey": null
+                                              }
+                                            ]
+                                          },
                                           {
                                             "kind": "LinkedField",
                                             "alias": null,
@@ -545,7 +582,7 @@ return {
   "params": {
     "operationKind": "query",
     "name": "FeatureQuery",
-    "id": "ed927a1b72f07ff1739da8d16a7555bb",
+    "id": "1bc0d47a8540dd28cdc93e9ccace52b4",
     "text": null,
     "metadata": {}
   }

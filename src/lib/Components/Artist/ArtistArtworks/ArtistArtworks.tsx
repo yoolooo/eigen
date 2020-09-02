@@ -1,4 +1,4 @@
-import { Box, Separator, Spacer } from "@artsy/palette"
+import { ContextModule, OwnerType } from "@artsy/cohesion"
 import { ArtistArtworks_artist } from "__generated__/ArtistArtworks_artist.graphql"
 import { ArtistNotableWorksRailFragmentContainer } from "lib/Components/Artist/ArtistArtworks/ArtistNotableWorksRail"
 import { FilteredArtworkGridZeroState } from "lib/Components/ArtworkGrids/FilteredArtworkGridZeroState"
@@ -9,9 +9,12 @@ import {
 import { AnimatedArtworkFilterButton, FilterModalMode, FilterModalNavigator } from "lib/Components/FilterModal"
 import { StickyTabPageScrollView } from "lib/Components/StickyTabPage/StickyTabPageScrollView"
 import { PAGE_SIZE } from "lib/data/constants"
+import { ArtistSeriesMoreSeriesFragmentContainer } from "lib/Scenes/ArtistSeries/ArtistSeriesMoreSeries"
 import { filterArtworksParams } from "lib/Scenes/Collection/Helpers/FilterArtworksHelpers"
+import { useEmissionOption } from "lib/store/AppStore"
 import { ArtworkFilterContext, ArtworkFilterGlobalStateProvider } from "lib/utils/ArtworkFiltersStore"
 import { Schema } from "lib/utils/track"
+import { Box, Separator, Spacer } from "palette"
 import React, { useContext, useEffect, useState } from "react"
 import { FlatList } from "react-native"
 import { createPaginationContainer, graphql, RelayPaginationProp } from "react-relay"
@@ -132,6 +135,7 @@ const ArtistArtworksContainer: React.FC<ArtworksGridProps & ViewableItemRefs> = 
   const artworksTotal = artworks?.edges?.length
   const shouldShowCollections = artist.iconicCollections && artist.iconicCollections.length > 1
   const shouldShowNotables = artist.notableWorks?.edges?.length === 3
+  const shouldShowArtistSeries = useEmissionOption("AROptionsArtistSeries")
 
   useEffect(() => {
     if (state.applyFilters) {
@@ -185,6 +189,9 @@ const ArtistArtworksContainer: React.FC<ArtworksGridProps & ViewableItemRefs> = 
             hasMore={relay.hasMore}
             isLoading={relay.isLoading}
             {...props}
+            contextScreenOwnerType={OwnerType.artist}
+            contextScreenOwnerId={artist.internalID}
+            contextScreenOwnerSlug={artist.slug}
           />
         </>
       )
@@ -192,6 +199,7 @@ const ArtistArtworksContainer: React.FC<ArtworksGridProps & ViewableItemRefs> = 
   }
 
   const sections = [
+    ...(shouldShowArtistSeries ? ["topArtistSeries"] : []),
     ...(shouldShowNotables ? ["notableWorks"] : []),
     ...(shouldShowCollections ? ["collections"] : []),
     ...(shouldShowCollections || shouldShowNotables ? ["separator"] : []),
@@ -206,6 +214,19 @@ const ArtistArtworksContainer: React.FC<ArtworksGridProps & ViewableItemRefs> = 
       keyExtractor={(_item, index) => String(index)}
       renderItem={({ item }): null | any => {
         switch (item) {
+          case "topArtistSeries":
+            return (
+              <Box my={1}>
+                <ArtistSeriesMoreSeriesFragmentContainer
+                  contextScreenOwnerId={artist.internalID}
+                  contextScreenOwnerSlug={artist.slug}
+                  contextScreenOwnerType={OwnerType.artist}
+                  contextModule={ContextModule.artistSeriesRail}
+                  artist={artist}
+                  artistSeriesHeader="Top Artist Series"
+                />
+              </Box>
+            )
           case "notableWorks":
             return <ArtistNotableWorksRailFragmentContainer artist={artist} {...props} />
           case "collections":
@@ -294,6 +315,8 @@ export default createPaginationContainer(
 
         ...ArtistNotableWorksRail_artist
 
+        ...ArtistSeriesMoreSeries_artist
+
         # this should match the query in ArtistNotableWorksRail
         notableWorks: filterArtworksConnection(sort: "-weighted_iconicity", first: 3) {
           edges {
@@ -306,15 +329,8 @@ export default createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props.artist && props.artist.artworks
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      }
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {

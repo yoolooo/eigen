@@ -14,7 +14,6 @@
 #import "ARMacros.h"
 #import "ARDispatchManager.h"
 
-#import <ReactiveObjC/ReactiveObjC.h>
 #import <ObjectiveSugar/ObjectiveSugar.h>
 
 @interface Fair () {
@@ -115,15 +114,6 @@
     return self;
 }
 
-- (void)updateFair:(void (^)(void))success
-{
-    [self.networkModel getFairInfo:self success:^(Fair *fair) {
-        success();
-    } failure:^(NSError *error) {
-        success();
-    }];
-}
-
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key
 {
     if ([key isEqualToString:ar_keypath(Fair.new, shows)]) {
@@ -138,13 +128,6 @@
 {
     [self.networkModel getOrderedSetsForFair:self success:success failure:^(NSError *error) {
         success([[NSMutableDictionary alloc] init]);
-    }];
-}
-
-- (void)getFairMaps:(void (^)(NSArray *))success
-{
-    [self.networkModel getMapInfoForFair:self success:success failure:^(NSError *error) {
-        success(nil);
     }];
 }
 

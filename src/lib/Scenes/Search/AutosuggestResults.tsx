@@ -1,12 +1,14 @@
-import { Flex, Serif, space } from "@artsy/palette"
 import { captureMessage } from "@sentry/react-native"
 import { AutosuggestResults_results } from "__generated__/AutosuggestResults_results.graphql"
 import {
   AutosuggestResultsQuery,
   AutosuggestResultsQueryVariables,
 } from "__generated__/AutosuggestResultsQuery.graphql"
+import { AboveTheFoldFlatList } from "lib/Components/AboveTheFoldFlatList"
 import Spinner from "lib/Components/Spinner"
 import { defaultEnvironment } from "lib/relay/createEnvironment"
+import { isPad } from "lib/utils/hardware"
+import { Flex, space, Text } from "palette"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import React from "react"
 import { FlatList } from "react-native"
@@ -17,7 +19,7 @@ export type AutosuggestResult = NonNullable<
   NonNullable<NonNullable<NonNullable<AutosuggestResults_results["results"]>["edges"]>[0]>["node"]
 >
 
-const INITIAL_BATCH_SIZE = 16
+const INITIAL_BATCH_SIZE = 32
 const SUBSEQUENT_BATCH_SIZE = 64
 
 const AutosuggestResultsFlatList: React.FC<{
@@ -97,8 +99,9 @@ const AutosuggestResultsFlatList: React.FC<{
   const noResults = results.current && results.current.results?.edges?.length === 0
 
   return (
-    <FlatList<AutosuggestResult>
-      ref={flatListRef}
+    <AboveTheFoldFlatList<AutosuggestResult>
+      listRef={flatListRef}
+      initialNumToRender={isPad() ? 24 : 12}
       style={{ flex: 1, padding: space(2) }}
       data={nodes}
       showsVerticalScrollIndicator={false}
@@ -108,7 +111,7 @@ const AutosuggestResultsFlatList: React.FC<{
       ListEmptyComponent={
         noResults
           ? () => {
-              return <Serif size="3">We couldn't find anything for “{query}”</Serif>
+              return <Text variant="text">We couldn't find anything for “{query}”</Text>
             }
           : null
       }
@@ -159,15 +162,8 @@ const AutosuggestResultsContainer = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
     getConnectionFromProps(props) {
       return props.results?.results
-    },
-    getFragmentVariables(vars, totalCount) {
-      return {
-        ...vars,
-        count: totalCount,
-      }
     },
     getVariables(_props, { count, cursor }, fragmentVariables) {
       return {
@@ -208,9 +204,9 @@ export const AutosuggestResults: React.FC<{
             return (
               <Flex alignItems="center" justifyContent="center">
                 <Flex maxWidth={280}>
-                  <Serif size="3" textAlign="center">
+                  <Text variant="text" textAlign="center">
                     There seems to be a problem with the connection. Please try again shortly.
-                  </Serif>
+                  </Text>
                 </Flex>
               </Flex>
             )

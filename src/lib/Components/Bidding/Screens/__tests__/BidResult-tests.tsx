@@ -1,11 +1,11 @@
-import { Button } from "@artsy/palette"
 import { BidResult_sale_artwork } from "__generated__/BidResult_sale_artwork.graphql"
 // @ts-ignore STRICTNESS_MIGRATION
 import { shallow } from "enzyme"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
+import { __appStoreTestUtils__ } from "lib/store/AppStore"
+import { renderWithWrappers } from "lib/tests/renderWithWrappers"
+import { Button } from "palette"
 import React from "react"
-import { NativeModules } from "react-native"
-import * as renderer from "react-test-renderer"
 import { BiddingThemeProvider } from "../../Components/BiddingThemeProvider"
 import { BidderPositionResult } from "../../types"
 import { BidResult } from "../BidResult"
@@ -63,7 +63,7 @@ describe("BidResult component", () => {
   describe("high bidder", () => {
     // marking this as pending since this component depends on the Timer component that depends on local timezone
     xit("renders winning screen properly", () => {
-      renderer.create(
+      renderWithWrappers(
         <BiddingThemeProvider>
           <BidResult
             refreshBidderInfo={refreshBidderInfoMock}
@@ -91,7 +91,7 @@ describe("BidResult component", () => {
     })
 
     it("dismisses the controller when the continue button is pressed", () => {
-      const bidResult = renderer.create(
+      const bidResult = renderWithWrappers(
         <BiddingThemeProvider>
           <BidResult
             refreshBidderInfo={refreshBidderInfoMock}
@@ -105,7 +105,7 @@ describe("BidResult component", () => {
       const mockDismiss = SwitchBoard.dismissModalViewController as jest.Mock<any>
       mockDismiss.mockReturnValueOnce(Promise.resolve())
 
-      bidResult.root.findByType(Button).instance.props.onPress()
+      bidResult.root.findByType(Button).props.onPress()
       jest.runAllTicks()
 
       expect(SwitchBoard.dismissModalViewController).toHaveBeenCalled()
@@ -116,7 +116,7 @@ describe("BidResult component", () => {
   describe("low bidder", () => {
     // marking this as pending since this component depends on the Timer component that depends on local timezone
     xit("renders without throwing an error", () => {
-      renderer.create(
+      renderWithWrappers(
         <BiddingThemeProvider>
           <BidResult
             refreshBidderInfo={refreshBidderInfoMock}
@@ -144,7 +144,7 @@ describe("BidResult component", () => {
     })
 
     it("pops to root when bid-again button is pressed", () => {
-      const bidResult = renderer.create(
+      const bidResult = renderWithWrappers(
         <BiddingThemeProvider>
           <BidResult
             refreshBidderInfo={refreshBidderInfoMock}
@@ -156,7 +156,7 @@ describe("BidResult component", () => {
         </BiddingThemeProvider>
       )
 
-      bidResult.root.findByType(Button).instance.props.onPress()
+      bidResult.root.findByType(Button).props.onPress()
       expect(refreshBidderInfoMock).toHaveBeenCalled()
       expect(refreshSaleArtworkInfoMock).toHaveBeenCalled()
 
@@ -167,7 +167,7 @@ describe("BidResult component", () => {
   describe("live bidding has started", () => {
     // marking this as pending since this component depends on the Timer component that depends on local timezone
     xit("renders without throwing an error", () => {
-      renderer.create(
+      renderWithWrappers(
         <BiddingThemeProvider>
           <BidResult
             refreshBidderInfo={refreshBidderInfoMock}
@@ -195,8 +195,10 @@ describe("BidResult component", () => {
     })
 
     it("dismisses controller and presents live interface when continue button is pressed", () => {
-      NativeModules.Emission.predictionURL = "https://live-staging.artsy.net"
-      const bidResult = renderer.create(
+      __appStoreTestUtils__?.injectState({
+        native: { sessionState: { predictionURL: "https://live-staging.artsy.net" } },
+      })
+      const bidResult = renderWithWrappers(
         <BiddingThemeProvider>
           <BidResult
             refreshBidderInfo={refreshBidderInfoMock}
@@ -210,7 +212,7 @@ describe("BidResult component", () => {
       const mockDismiss = SwitchBoard.dismissModalViewController as jest.Mock<any>
       mockDismiss.mockReturnValueOnce(Promise.resolve())
 
-      bidResult.root.findByType(Button).instance.props.onPress()
+      bidResult.root.findByType(Button).props.onPress()
       jest.runAllTicks()
 
       expect(SwitchBoard.presentModalViewController).toHaveBeenCalledWith(

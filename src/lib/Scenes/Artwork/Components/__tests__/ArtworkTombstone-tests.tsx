@@ -1,7 +1,7 @@
-import { Theme } from "@artsy/palette"
 // @ts-ignore STRICTNESS_MIGRATION
 import { mount } from "enzyme"
 import { ArtworkFixture } from "lib/__fixtures__/ArtworkFixture"
+import { Theme } from "palette"
 import React from "react"
 import { NativeModules, TouchableWithoutFeedback } from "react-native"
 import { ArtworkTombstone } from "../ArtworkTombstone"
@@ -68,11 +68,8 @@ describe("ArtworkTombstone", () => {
   })
 
   describe("for a user not in the US", () => {
-    beforeAll(() => {
-      NativeModules.ARCocoaConstantsModule.CurrentLocale = "fr_FR"
-    })
-
     it("renders dimensions in centimeters", () => {
+      NativeModules.ARCocoaConstantsModule.CurrentLocale = "fr_FR"
       const component = mount(
         <Theme>
           <ArtworkTombstone artwork={artworkTombstoneArtwork} />
@@ -83,11 +80,8 @@ describe("ArtworkTombstone", () => {
   })
 
   describe("for a US based user", () => {
-    beforeAll(() => {
-      NativeModules.ARCocoaConstantsModule.CurrentLocale = "en_US"
-    })
-
     it("renders dimensions in inches", () => {
+      NativeModules.ARCocoaConstantsModule.CurrentLocale = "en_US"
       const component = mount(
         <Theme>
           <ArtworkTombstone artwork={artworkTombstoneArtwork} />

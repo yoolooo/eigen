@@ -1,12 +1,15 @@
-import { Box, Separator, space, Spacer, Theme } from "@artsy/palette"
+import { OwnerType } from "@artsy/cohesion"
 import { Artwork_artworkAboveTheFold } from "__generated__/Artwork_artworkAboveTheFold.graphql"
 import { Artwork_artworkBelowTheFold } from "__generated__/Artwork_artworkBelowTheFold.graphql"
 import { Artwork_me } from "__generated__/Artwork_me.graphql"
 import { ArtworkAboveTheFoldQuery } from "__generated__/ArtworkAboveTheFoldQuery.graphql"
 import { ArtworkBelowTheFoldQuery } from "__generated__/ArtworkBelowTheFoldQuery.graphql"
 import { ArtworkMarkAsRecentlyViewedQuery } from "__generated__/ArtworkMarkAsRecentlyViewedQuery.graphql"
+import LoadFailureView from "lib/Components/LoadFailureView"
 import { RetryErrorBoundary } from "lib/Components/RetryErrorBoundary"
 import { defaultEnvironment } from "lib/relay/createEnvironment"
+import { ArtistSeriesMoreSeriesFragmentContainer as ArtistSeriesMoreSeries } from "lib/Scenes/ArtistSeries/ArtistSeriesMoreSeries"
+import { getCurrentEmissionState } from "lib/store/AppStore"
 import { AboveTheFoldQueryRenderer } from "lib/utils/AboveTheFoldQueryRenderer"
 import {
   PlaceholderBox,
@@ -15,7 +18,8 @@ import {
   ProvidePlaceholderContext,
 } from "lib/utils/placeholders"
 import { Schema, screenTrack } from "lib/utils/track"
-import { ProvideScreenDimensions, useScreenDimensions } from "lib/utils/useScreenDimensions"
+import { useScreenDimensions } from "lib/utils/useScreenDimensions"
+import { Box, Separator, space, Spacer } from "palette"
 import React from "react"
 import { ActivityIndicator, FlatList, NativeModules, View } from "react-native"
 import { RefreshControl } from "react-native"
@@ -27,6 +31,7 @@ import { AboutWorkFragmentContainer as AboutWork } from "./Components/AboutWork"
 import { ArtworkDetailsFragmentContainer as ArtworkDetails } from "./Components/ArtworkDetails"
 import { ArtworkHeaderFragmentContainer as ArtworkHeader } from "./Components/ArtworkHeader"
 import { ArtworkHistoryFragmentContainer as ArtworkHistory } from "./Components/ArtworkHistory"
+import { ArtworksInSeriesRailFragmentContainer as ArtworksInSeriesRail } from "./Components/ArtworksInSeriesRail"
 import { CommercialInformationFragmentContainer as CommercialInformation } from "./Components/CommercialInformation"
 import { ContextCardFragmentContainer as ContextCard } from "./Components/ContextCard"
 import { OtherWorksFragmentContainer as OtherWorks, populatedGrids } from "./Components/OtherWorks/OtherWorks"
@@ -134,6 +139,19 @@ export class Artwork extends React.Component<Props, State> {
     }
   }
 
+  shouldRenderArtworksInArtistSeries = () => {
+    const featureFlagEnabled = getCurrentEmissionState().options.AROptionsArtistSeries
+    const { artistSeriesConnection } = this.props.artworkBelowTheFold
+    const artistSeries = artistSeriesConnection?.edges?.[0]
+    const numArtistSeriesArtworks = artistSeries?.node?.filterArtworksConnection?.edges?.length ?? 0
+    return featureFlagEnabled && numArtistSeriesArtworks > 0
+  }
+
+  shouldRenderArtistSeriesMoreSeries = () => {
+    const featureFlagEnabled = getCurrentEmissionState().options.AROptionsArtistSeries
+    return featureFlagEnabled && (this.props.artworkBelowTheFold.artist?.artistSeriesConnection?.totalCount ?? 0) > 0
+  }
+
   onRefresh = (cb?: () => any) => {
     if (this.state.refreshing) {
       return
@@ -238,6 +256,28 @@ export class Artwork extends React.Component<Props, State> {
       })
     }
 
+    if (this.shouldRenderArtworksInArtistSeries()) {
+      sections.push({
+        key: "artworksInSeriesRail",
+        element: <ArtworksInSeriesRail artwork={artworkBelowTheFold} />,
+      })
+    }
+
+    if (this.shouldRenderArtistSeriesMoreSeries()) {
+      sections.push({
+        key: "artistSeriesMoreSeries",
+        element: (
+          <ArtistSeriesMoreSeries
+            contextScreenOwnerId={artworkAboveTheFold.internalID}
+            contextScreenOwnerSlug={artworkAboveTheFold.slug}
+            contextScreenOwnerType={OwnerType.artwork}
+            artist={artist}
+            artistSeriesHeader={"Series from this artist"}
+          />
+        ),
+      })
+    }
+
     if (this.shouldRenderOtherWorks()) {
       sections.push({
         key: "otherWorks",
@@ -258,7 +298,7 @@ export class Artwork extends React.Component<Props, State> {
           </Box>
         )}
         refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.onRefresh} />}
-        contentInset={{ bottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item }) => (item.excludePadding ? item.element : <Box px={2}>{item.element}</Box>)}
       />
     )
@@ -303,6 +343,10 @@ export const ArtworkContainer = createRefetchContainer(
           biography_blurb: biographyBlurb {
             text
           }
+          artistSeriesConnection(first: 4) {
+            totalCount
+          }
+          ...ArtistSeriesMoreSeries_artist
         }
         sale {
           id
@@ -343,6 +387,19 @@ export const ArtworkContainer = createRefetchContainer(
             }
           }
         }
+        artistSeriesConnection(first: 1) {
+          edges {
+            node {
+              filterArtworksConnection(sort: "-decayed_merch", first: 20) {
+                edges {
+                  node {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
         ...PartnerCard_artwork
         ...AboutWork_artwork
         ...OtherWorks_artwork
@@ -350,6 +407,7 @@ export const ArtworkContainer = createRefetchContainer(
         ...ArtworkDetails_artwork
         ...ContextCard_artwork
         ...ArtworkHistory_artwork
+        ...ArtworksInSeriesRail_artwork
       }
     `,
     me: graphql`
@@ -378,56 +436,59 @@ export const ArtworkQueryRenderer: React.SFC<{
     <RetryErrorBoundary
       render={({ isRetry }) => {
         return (
-          <Theme>
-            <ProvideScreenDimensions>
-              <AboveTheFoldQueryRenderer<ArtworkAboveTheFoldQuery, ArtworkBelowTheFoldQuery>
-                environment={environment || defaultEnvironment}
-                above={{
-                  query: graphql`
-                    query ArtworkAboveTheFoldQuery($artworkID: String!) {
-                      artwork(id: $artworkID) {
-                        ...Artwork_artworkAboveTheFold
-                      }
-                      me {
-                        ...Artwork_me
-                      }
-                    }
-                  `,
-                  variables: { artworkID },
-                }}
-                below={{
-                  query: graphql`
-                    query ArtworkBelowTheFoldQuery($artworkID: String!) {
-                      artwork(id: $artworkID) {
-                        ...Artwork_artworkBelowTheFold
-                      }
-                    }
-                  `,
-                  variables: { artworkID },
-                }}
-                render={{
-                  renderPlaceholder: () => <AboveTheFoldPlaceholder />,
-                  renderComponent: ({ above, below }) => {
-                    return (
-                      <ArtworkContainer
-                        // @ts-ignore STRICTNESS_MIGRATION
-                        artworkAboveTheFold={above.artwork}
-                        // @ts-ignore STRICTNESS_MIGRATION
-                        artworkBelowTheFold={below?.artwork ?? null}
-                        // @ts-ignore STRICTNESS_MIGRATION
-                        me={above.me}
-                        {...others}
-                      />
-                    )
-                  },
-                }}
-                cacheConfig={{
-                  // Bypass Relay cache on retries.
-                  ...(isRetry && { force: true }),
-                }}
-              />
-            </ProvideScreenDimensions>
-          </Theme>
+          <AboveTheFoldQueryRenderer<ArtworkAboveTheFoldQuery, ArtworkBelowTheFoldQuery>
+            environment={environment || defaultEnvironment}
+            above={{
+              query: graphql`
+                query ArtworkAboveTheFoldQuery($artworkID: String!) {
+                  artwork(id: $artworkID) {
+                    ...Artwork_artworkAboveTheFold
+                  }
+                  me {
+                    ...Artwork_me
+                  }
+                }
+              `,
+              variables: { artworkID },
+            }}
+            below={{
+              query: graphql`
+                query ArtworkBelowTheFoldQuery($artworkID: String!) {
+                  artwork(id: $artworkID) {
+                    ...Artwork_artworkBelowTheFold
+                  }
+                }
+              `,
+              variables: { artworkID },
+            }}
+            render={{
+              renderPlaceholder: () => <AboveTheFoldPlaceholder />,
+              renderComponent: ({ above, below }) => {
+                // Avoid app crash when opened from a 404 page
+                // See https://artsyproduct.atlassian.net/browse/MX-480
+                // @TODO: Implement test for AboveTheFoldQueryRenderer to avoid future regressions https://artsyproduct.atlassian.net/browse/MX-522
+                if (!above?.artwork) {
+                  return <LoadFailureView style={{ flex: 1 }} />
+                }
+
+                return (
+                  <ArtworkContainer
+                    // @ts-ignore STRICTNESS_MIGRATION
+                    artworkAboveTheFold={above.artwork}
+                    // @ts-ignore STRICTNESS_MIGRATION
+                    artworkBelowTheFold={below?.artwork ?? null}
+                    // @ts-ignore STRICTNESS_MIGRATION
+                    me={above.me}
+                    {...others}
+                  />
+                )
+              },
+            }}
+            cacheConfig={{
+              // Bypass Relay cache on retries.
+              ...(isRetry && { force: true }),
+            }}
+          />
         )
       }}
     />

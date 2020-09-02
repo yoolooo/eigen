@@ -1,4 +1,3 @@
-import { Button, Flex, Sans, Spacer, Text, Theme } from "@artsy/palette"
 import { ViewingRoom_viewingRoom } from "__generated__/ViewingRoom_viewingRoom.graphql"
 import { ViewingRoomQuery } from "__generated__/ViewingRoomQuery.graphql"
 import LoadFailureView from "lib/Components/LoadFailureView"
@@ -7,7 +6,8 @@ import { defaultEnvironment } from "lib/relay/createEnvironment"
 import renderWithLoadProgress from "lib/utils/renderWithLoadProgress"
 import { ProvideScreenTracking, Schema } from "lib/utils/track"
 import { once } from "lodash"
-import { maxWidth } from "palette"
+import { Button, Flex, Sans, Spacer, Text, Theme } from "palette"
+import { _maxWidth as maxWidth } from "palette"
 import React, { useCallback, useRef, useState } from "react"
 import { FlatList, LayoutAnimation, View, ViewToken } from "react-native"
 import { createFragmentContainer, graphql, QueryRenderer } from "react-relay"
@@ -142,10 +142,10 @@ export const ViewingRoom: React.FC<ViewingRoomProps> = props => {
                 setDisplayViewWorksButton(true)
               }
             }, [])}
+            contentContainerStyle={{ paddingBottom: 80 }}
             viewabilityConfig={{ itemVisiblePercentThreshold: 15 }}
             data={sections}
             ListHeaderComponent={<ViewingRoomHeaderContainer viewingRoom={viewingRoom} />}
-            contentInset={{ bottom: 80 }}
             ItemSeparatorComponent={() => <Spacer mb={3} />}
             renderItem={({ item }) => {
               return item.content

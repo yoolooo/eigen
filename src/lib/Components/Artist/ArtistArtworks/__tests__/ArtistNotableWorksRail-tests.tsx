@@ -1,9 +1,9 @@
-import { Theme } from "@artsy/palette"
 import { ArtistNotableWorksRailTestsQueryRawResponse } from "__generated__/ArtistNotableWorksRailTestsQuery.graphql"
 import { AboveTheFoldFlatList } from "lib/Components/AboveTheFoldFlatList"
 import { ArtistNotableWorksRailFragmentContainer } from "lib/Components/Artist/ArtistArtworks/ArtistNotableWorksRail"
 import { ArtworkTileRailCard } from "lib/Components/ArtworkTileRail"
 import { renderRelayTree } from "lib/tests/renderRelayTree"
+import { Theme } from "palette"
 import React from "react"
 import { graphql } from "react-relay"
 
@@ -46,7 +46,7 @@ describe("Notable Works Rail", () => {
         wrapper
           .find(ArtworkTileRailCard)
           .first()
-          .props().artistNames
+          .props().title
       ).toBe("My Second Greatest Art")
 
       expect(
@@ -70,7 +70,7 @@ describe("Notable Works Rail", () => {
         wrapper
           .find(ArtworkTileRailCard)
           .at(1)
-          .props().artistNames
+          .props().title
       ).toBe("My Greatest Art")
     })
 
@@ -81,7 +81,7 @@ describe("Notable Works Rail", () => {
         wrapper
           .find(ArtworkTileRailCard)
           .at(2)
-          .props().artistNames
+          .props().title
       ).toBe("My Third Greatest Art")
 
       expect(
@@ -104,6 +104,7 @@ const artistMockData: ArtistNotableWorksRailTestsQueryRawResponse["artist"] = {
           id: "another-another-id-2",
           image: {
             imageURL: "https://www.testimages.net/test2.jpg",
+            aspectRatio: 0.5,
           },
           saleMessage: "€2,500 - 5,000",
           saleArtwork: null,
@@ -118,6 +119,7 @@ const artistMockData: ArtistNotableWorksRailTestsQueryRawResponse["artist"] = {
           id: "another-another-id",
           image: {
             imageURL: "https://www.testimages.net/test.jpg",
+            aspectRatio: 0.8,
           },
           saleMessage: null,
           saleArtwork: null,
@@ -136,6 +138,7 @@ const artistMockData: ArtistNotableWorksRailTestsQueryRawResponse["artist"] = {
           id: "another-another-id-3",
           image: {
             imageURL: "https://www.testimages.net/test3.jpg",
+            aspectRatio: 0.9,
           },
           saleMessage: null,
           saleArtwork: {

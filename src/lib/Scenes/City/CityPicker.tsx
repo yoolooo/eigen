@@ -1,8 +1,8 @@
-import { Box, color, Flex, Sans, Separator, Serif, space } from "@artsy/palette"
 import { dimensions, screen } from "lib/data/ScreenSizes/screenSizes"
 import { CircleWhiteCheckIcon } from "lib/Icons/CircleWhiteCheckIcon"
 import SwitchBoard from "lib/NativeModules/SwitchBoard"
 import { Schema, screenTrack, track } from "lib/utils/track"
+import { Box, color, Flex, Sans, Separator, Serif, space } from "palette"
 import React, { Component } from "react"
 import { Dimensions, NativeModules, TouchableOpacity } from "react-native"
 import styled from "styled-components/native"
@@ -45,7 +45,7 @@ export class CityPicker extends Component<Props, State> {
   handleLogo(screenHeight: number) {
     return (
       <Sans size={dimensions(screenHeight)[screen(screenHeight)].logoFontSize} weight="medium" ml={2} mt={2}>
-        Presented in Partnership with BMW
+        Presented in partnership with BMW
       </Sans>
     )
   }
@@ -110,7 +110,7 @@ export class CityPicker extends Component<Props, State> {
             </Box>
           ))}
           <LogoContainer>
-            <BMWSponsorship url={sponsoredContentUrl} logoText="Presented in Partnership with BMW" />
+            <BMWSponsorship url={sponsoredContentUrl} logoText="Presented in partnership with BMW" />
           </LogoContainer>
         </Box>
       </Overlay>

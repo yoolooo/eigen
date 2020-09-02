@@ -1,6 +1,5 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <ReplayKit/ReplayKit.h>
-#import <AdSupport/ASIdentifierManager.h>
 
 #import "ARAdminSettingsViewController.h"
 #import "AREchoContentsViewController.h"
@@ -29,9 +28,6 @@
 #import <React/RCTBridge.h>
 #import <React/RCTDevSettings.h>
 
-#if DEBUG
-#import <VCRURLConnection/VCR.h>
-#endif
 
 NSString *const ARRecordingScreen = @"ARRecordingScreen";
 
@@ -72,7 +68,6 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
         [self generateArtistSeries],
         [self generateViewingRooms],
         [self generateFeaturePage],
-        [self generateOnboarding],
         [self generateShowAllLiveAuctions],
         [self showConsignmentsFlow],
         [self showSentryBreadcrumbs],
@@ -90,14 +85,10 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
 
     ARSectionData *toggleSections = [[ARSectionData alloc] initWithCellDataArray:@[
        [self generateOnScreenAnalytics],
-       [self generateOnScreenMartsy],
-       [self copyAdvertisingID]
+       [self generateOnScreenMartsy]
     ]];
     toggleSections.headerTitle = @"Options";
     [tableViewData addSectionData:toggleSections];
-
-    ARSectionData *vcrSection = [self createVCRSection];
-    [tableViewData addSectionData:vcrSection];
 
     ARSectionData *developerSection = [self createDeveloperSection];
     [tableViewData addSectionData:developerSection];
@@ -139,15 +130,8 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
 - (ARCellData *)generateArtistSeries
 {
     return [self tappableCellDataWithTitle:@"→ Artist Series" selection:^{
-        AREigenArtistSeriesComponentViewController *viewController = [[AREigenArtistSeriesComponentViewController alloc] initWithArtistSeriesID:@"alex-katz-departure"];
+        AREigenArtistSeriesComponentViewController *viewController = [[AREigenArtistSeriesComponentViewController alloc] initWithArtistSeriesID:@"alex-katz-ada"];
         [[ARTopMenuViewController sharedController] pushViewController:viewController animated:YES];
-    }];
-}
-
-- (ARCellData *)generateOnboarding
-{
-    return [self tappableCellDataWithTitle:@"→ Onboarding" selection:^{
-        [self showSlideshow];
     }];
 }
 
@@ -155,15 +139,6 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
 {
     return [self tappableCellDataWithTitle:@"Restart" selection:^{
         exit(0);
-    }];
-}
-
-- (ARCellData *)copyAdvertisingID
-{
-    return [self tappableCellDataWithTitle:@"Copy Advertising ID" selectionWithCell:^(UITableViewCell *cell) {
-        NSUUID *adId = [[ASIdentifierManager sharedManager] advertisingIdentifier];
-        [[UIPasteboard generalPasteboard] setValue:[adId UUIDString] forPasteboardType:(NSString *)kUTTypePlainText];
-        cell.textLabel.text = @"Copied";
     }];
 }
 
@@ -531,41 +506,6 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
         [self editableTextCellDataWithName:@"Live Auctions Socket" defaultKey:ARStagingLiveAuctionSocketURLDefault enabled:usingStaging],
     ]];
     return labsSectionData;
-}
-
-
-- (ARSectionData *)createVCRSection
-{
-    ARSectionData *vcrSectionData = [[ARSectionData alloc] init];
-#if DEBUG
-    vcrSectionData.headerTitle = @"Offline Recording Mode (Dev)";
-
-    ARCellData *startCellData = [self tappableCellDataWithTitle:@"Start API Recording, restarts" selection:^{
-        NSString *oldFilePath = [ARFileUtils cachesPathWithFolder:@"vcr" filename:@"eigen.json"];
-        [[NSFileManager defaultManager] removeItemAtPath:oldFilePath error:nil];
-
-        [AROptions setBool:YES forOption:AROptionsUseVCR];
-        exit(0);
-    }];
-
-    ARCellData *saveCellData = [self tappableCellDataWithTitle:@"Saves API Recording, restarts" selection:^{
-        [VCR save:[ARFileUtils cachesPathWithFolder:@"vcr" filename:@"eigen.json"]];
-        exit(0);
-    }];
-
-    [vcrSectionData addCellData:startCellData];
-    [vcrSectionData addCellData:saveCellData];
-#endif
-
-    return vcrSectionData;
-}
-
-- (void)showSlideshow
-{
-    ARAppDelegate *delegate = [ARAppDelegate sharedInstance];
-    [delegate showOnboardingWithState:ARInitialOnboardingStateSlideShow];
-
-    [self.navigationController popViewControllerAnimated:NO];
 }
 
 - (BOOL)shouldAutorotate

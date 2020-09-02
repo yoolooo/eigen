@@ -1,23 +1,20 @@
-import { color, Flex, Serif, Spacer, Theme } from "@artsy/palette"
 import { SearchInput } from "lib/Components/SearchInput"
 import { isPad } from "lib/utils/hardware"
 import { Schema } from "lib/utils/track"
-import { ProvideScreenDimensions } from "lib/utils/useScreenDimensions"
+import { color, Flex, Spacer } from "palette"
 import React, { useState } from "react"
 import { KeyboardAvoidingView, ScrollView } from "react-native"
 import { useTracking } from "react-tracking"
 import styled from "styled-components/native"
 import { AutosuggestResults } from "./AutosuggestResults"
 import { CityGuideCTA } from "./CityGuideCTA"
-import { ProvideRecentSearches, RecentSearches, useRecentSearches } from "./RecentSearches"
+import { RecentSearches } from "./RecentSearches"
 import { SearchContext, useSearchProviderValues } from "./SearchContext"
 
-const SearchPage: React.FC = () => {
+export const Search: React.FC = () => {
   const [query, setQuery] = useState("")
-  const { recentSearches } = useRecentSearches()
   const { trackEvent } = useTracking()
   const searchProviderValues = useSearchProviderValues(query)
-  const showCityGuide = !isPad()
 
   return (
     <SearchContext.Provider value={searchProviderValues}>
@@ -50,20 +47,13 @@ const SearchPage: React.FC = () => {
         </Flex>
         {query.length >= 2 ? (
           <AutosuggestResults query={query} />
-        ) : showCityGuide ? (
+        ) : (
           <Scrollable>
             <RecentSearches />
             <Spacer mb={3} />
-            <CityGuideCTA />
+            {!isPad() && <CityGuideCTA />}
             <Spacer mb="40px" />
           </Scrollable>
-        ) : recentSearches.length ? (
-          <Scrollable>
-            <RecentSearches />
-            <Spacer mb="40px" />
-          </Scrollable>
-        ) : (
-          <LegacyEmptyState />
         )}
       </KeyboardAvoidingView>
     </SearchContext.Provider>
@@ -78,27 +68,3 @@ const Scrollable = styled(ScrollView).attrs({
   padding: 0 20px;
   padding-top: 20px;
 `
-
-const LegacyEmptyState: React.FC<{}> = ({}) => {
-  return (
-    <Flex style={{ flex: 1 }} alignItems="center" justifyContent="center">
-      <Flex maxWidth={250}>
-        <Serif textAlign="center" size="3">
-          Search for artists, artworks, galleries, shows, and more.
-        </Serif>
-      </Flex>
-    </Flex>
-  )
-}
-
-export const Search: React.FC = () => {
-  return (
-    <Theme>
-      <ProvideScreenDimensions>
-        <ProvideRecentSearches>
-          <SearchPage />
-        </ProvideRecentSearches>
-      </ProvideScreenDimensions>
-    </Theme>
-  )
-}

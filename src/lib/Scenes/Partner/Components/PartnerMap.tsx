@@ -1,18 +1,17 @@
-import { Box, color, Flex, Sans, Serif, Spacer } from "@artsy/palette"
 // @ts-ignore STRICTNESS_MIGRATION
 import Mapbox from "@mapbox/react-native-mapbox-gl"
 import { PartnerMap_location } from "__generated__/PartnerMap_location.graphql"
 import { cityAndPostalCode, tappedOnMap } from "lib/Components/LocationMap"
 import { Pin } from "lib/Icons/Pin"
 import { ArtsyMapStyleURL } from "lib/Scenes/Map/GlobalMap"
+import { Box, color, Flex, Sans, Serif, Spacer } from "palette"
 import React from "react"
-import { NativeModules, TouchableOpacity } from "react-native"
+import { TouchableOpacity } from "react-native"
+import Config from "react-native-config"
 import { createFragmentContainer, graphql } from "react-relay"
 import styled from "styled-components/native"
 
-const Emission = NativeModules.Emission
-
-Mapbox.setAccessToken(Emission.mapBoxAPIClientKey)
+Mapbox.setAccessToken(Config.MAPBOX_API_CLIENT_KEY)
 
 const PartnerMap: React.FC<{
   location: PartnerMap_location
@@ -26,7 +25,7 @@ const PartnerMap: React.FC<{
         {city}
       </Sans>
       <Spacer mb={0.5} />
-      <TouchableOpacity onPress={() => tappedOnMap(address, null, null, city, postalCode, lat, lng)}>
+      <TouchableOpacity onPress={() => tappedOnMap(lat, lng, address, null, null, city, postalCode)}>
         <MapWrapper>
           <Map
             key={`${lng}`}

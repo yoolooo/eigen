@@ -7,6 +7,7 @@
 #import <JLRoutes/JLRoutes.h>
 #import "ARSwitchBoard+Eigen.h"
 #import "ARTopMenuNavigationDataSource.h"
+#import "ARAppDelegate+Emission.h"
 
 #import "ARFairAwareObject.h"
 #import "Fair.h"
@@ -16,7 +17,6 @@
 #import "ARAuctionWebViewController.h"
 #import "ARBrowseCategoriesViewController.h"
 #import "AREigenCollectionComponentViewController.h"
-#import "AREigenFairComponentViewController.h"
 #import "AREigenInquiryComponentViewController.h"
 #import "AREigenMapContainerViewController.h"
 #import "ARFavoritesComponentViewController.h"
@@ -29,7 +29,9 @@
 #import <Emission/AREmission.h>
 #import "ARNotificationsManager.h"
 
+
 #import <Emission/ARArtistSeriesComponentViewController.h>
+#import <Emission/ARArtistSeriesFullArtistSeriesListComponentViewController.h>
 #import <Emission/ARArtworkAttributionClassFAQViewController.h>
 #import <Emission/ARAuctionsComponentViewController.h>
 #import <Emission/ARCityBMWListComponentViewController.h>
@@ -41,8 +43,6 @@
 #import <Emission/ARFairArtworksComponentViewController.h>
 #import <Emission/ARFairBMWArtActivationComponentViewController.h>
 #import <Emission/ARFairBoothComponentViewController.h>
-#import <Emission/ARFairComponentViewController.h>
-#import <Emission/ARFairComponentViewController.h>
 #import <Emission/ARFairExhibitorsComponentViewController.h>
 #import <Emission/ARFairMoreInfoComponentViewController.h>
 #import <Emission/ARMyCollectionAddArtworkComponentViewController.h>
@@ -157,7 +157,7 @@ static ARSwitchBoard *sharedInstance = nil;
             [wself removeEchoRoutes:currentRoutes];
             [wself updateRoutes];
             if (!ARAppStatus.isRunningTests) {
-                [[AREmission sharedInstance].notificationsManagerModule emissionOptionsChanged:[wself.echo featuresMap]];
+                [[ARAppDelegate sharedInstance] updateEmissionOptions];
             }
         }];
     }];
@@ -291,6 +291,10 @@ static ARSwitchBoard *sharedInstance = nil;
         return [[ARArtistSeriesComponentViewController alloc] initWithArtistSeriesID:parameters[@"slug"]];
     }];
 
+    [self.routes addRoute:@"/artist/:id/artist-series/" handler:JLRouteParams {
+        return [[ARArtistSeriesFullArtistSeriesListComponentViewController alloc] initWithArtistID:parameters[@"id"]];
+    }];
+
     [self.routes addRoute:@"/collection/:id" handler:JLRouteParams {
         return [[AREigenCollectionComponentViewController alloc] initWithCollectionID:parameters[@"id"]];
     }];
@@ -300,6 +304,12 @@ static ARSwitchBoard *sharedInstance = nil;
     }];
 
     [self.routes addRoute:@"/conversation/:id"
+     handler:JLRouteParams {
+        __strong typeof (wself) sself = wself;
+        return [sself loadConversationWithID:parameters[@"id"]];
+    }];
+
+    [self.routes addRoute:@"/user/conversations/:id"
      handler:JLRouteParams {
         __strong typeof (wself) sself = wself;
         return [sself loadConversationWithID:parameters[@"id"]];
@@ -492,8 +502,9 @@ static ARSwitchBoard *sharedInstance = nil;
     // It doesn't need to run through echo, as it's pretty much here to stay forever.
     [self.routes addRoute:@"/:slug" priority:0 handler:JLRouteParams {
         __strong typeof (wself) sself = wself;
-        if ([parameters[@"entity"] isEqualToString:@"fair"]) {
-            return [[AREigenFairComponentViewController alloc] initWithFairID:parameters[@"slug"]];
+        NSString *entityType = parameters[@"entity"];
+        if (entityType) {
+            return [[ARComponentViewController alloc] initWithEmission:nil moduleName:@"VanityURLEntityRenderer" initialProperties:parameters];
         }
 
         return [sself loadUnknownPathWithID:parameters[@"slug"]];
@@ -589,7 +600,7 @@ static ARSwitchBoard *sharedInstance = nil;
 
     } else if ([ARRouter isWebURL:url]) {
         /// Is is a webpage we could open in webkit?, or need to break out to safari (see PR #1195)
-        if (ARIsRunningInDemoMode || [url.query containsString:AREscapeSandboxQueryString]) {
+        if ([url.query containsString:AREscapeSandboxQueryString]) {
             [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
             return nil;
         } else {

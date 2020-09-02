@@ -1,5 +1,6 @@
 This update includes a number of improvements and bug fixes, including:
 
-• Fixes a problem where tapping the Home tab would sometimes cause the app to become unresponsive.
+• Fixes a problem loading artworks from Safari links.
+• Fixes a problem filtering artworks on Category and Auction pages.
 
 Have feedback? Email us at support@artsy.net
