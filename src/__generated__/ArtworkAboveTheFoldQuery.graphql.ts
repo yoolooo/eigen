@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-/* @relayHash 661233a5a951a42f138234fe0f2fc440 */
+/* @relayHash 98ba0d102c27abf724f968709430cd61 */
 
 import { ConcreteRequest } from "relay-runtime";
 import { FragmentRefs } from "relay-runtime";
@@ -136,6 +136,12 @@ fragment Artwork_artworkAboveTheFold on Artwork {
   slug
   internalID
   id
+  title
+  artist {
+    name
+    id
+  }
+  medium
   is_acquireable: isAcquireable
   is_offerable: isOfferable
   is_biddable: isBiddable
@@ -1156,7 +1162,7 @@ return {
   "params": {
     "operationKind": "query",
     "name": "ArtworkAboveTheFoldQuery",
-    "id": "828d2c1f49df48c39a108aa86a3bfd2a",
+    "id": "06716d8b136f465d0ad2260ab7e75357",
     "text": null,
     "metadata": {}
   }
