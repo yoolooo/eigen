@@ -11,6 +11,7 @@ import { defaultEnvironment } from "lib/relay/createEnvironment"
 import { ArtistSeriesMoreSeriesFragmentContainer as ArtistSeriesMoreSeries } from "lib/Scenes/ArtistSeries/ArtistSeriesMoreSeries"
 import { getCurrentEmissionState } from "lib/store/AppStore"
 import { AboveTheFoldQueryRenderer } from "lib/utils/AboveTheFoldQueryRenderer"
+import { getSmallImageVersionForThumbnail } from "lib/utils/artworkImageUtil"
 import {
   PlaceholderBox,
   PlaceholderRaggedText,
@@ -65,7 +66,6 @@ export class Artwork extends React.Component<Props, State> {
   state = {
     refreshing: false,
   }
-
   shouldRenderDetails = () => {
     const {
       category,
@@ -97,13 +97,22 @@ export class Artwork extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    const artwork = this.props.artworkAboveTheFold
+    const defaultArtworkImage = artwork.images?.filter(image => image?.isDefault)[0]
+    // TODO: Should this be a gemini URL?
+    const imageURL = defaultArtworkImage?.imageURL?.replace(
+      ":version",
+      getSmallImageVersionForThumbnail(defaultArtworkImage.imageVersions!)
+    )
     const handOffArtwork = {
-      title: this.props.artworkAboveTheFold.title,
-      artistName: this.props.artworkAboveTheFold.artist?.name,
-      medium: this.props.artworkAboveTheFold.medium,
-      slug: this.props.artworkAboveTheFold.slug,
-      internalID: this.props.artworkAboveTheFold.internalID,
-      id: this.props.artworkAboveTheFold.slug,
+      title: artwork.title,
+      artistName: artwork.artist?.name,
+      medium: artwork.medium,
+      slug: artwork.slug,
+      internalID: artwork.internalID,
+      id: artwork.slug,
+      date: artwork.date,
+      imageURL,
     }
     NativeModules.ARTemporaryAPIModule.registerForContinuation(handOffArtwork)
     this.markArtworkAsRecentlyViewed()
@@ -330,8 +339,14 @@ export const ArtworkContainer = createRefetchContainer(
         internalID
         id
         title
+        date
         artist {
           name
+        }
+        images {
+          isDefault
+          imageURL
+          imageVersions
         }
         medium
         is_acquireable: isAcquireable
