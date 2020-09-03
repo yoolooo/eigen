@@ -592,6 +592,7 @@
 		CB8D581924AD21CC003673A5 /* AREigenArtistSeriesComponentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CB8D581724AD21CC003673A5 /* AREigenArtistSeriesComponentViewController.m */; };
 		CB9E244117CBC36F00773A9A /* ARAuthProviders.m in Sources */ = {isa = PBXBuildFile; fileRef = CB9E244017CBC36F00773A9A /* ARAuthProviders.m */; };
 		CBB469D0181F1F1200B5692B /* Bid.m in Sources */ = {isa = PBXBuildFile; fileRef = CBB469CF181F1F1200B5692B /* Bid.m */; };
+		CBD140C125016E18001B9A5C /* HandoffArtist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD140C025016E18001B9A5C /* HandoffArtist.swift */; };
 		CBFCA0562427ABBB00B2822D /* apple-login@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFCA0542427ABBB00B2822D /* apple-login@3x.png */; };
 		CBFCA0572427ABBB00B2822D /* apple-login@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFCA0552427ABBB00B2822D /* apple-login@2x.png */; };
 		CBFCA05A2427ABC600B2822D /* facebook-login@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFCA0582427ABC500B2822D /* facebook-login@3x.png */; };
@@ -1612,6 +1613,7 @@
 		CBB469CE181F1F1200B5692B /* Bid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bid.h; sourceTree = "<group>"; };
 		CBB469CF181F1F1200B5692B /* Bid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Bid.m; sourceTree = "<group>"; };
 		CBBFF96B8BCEDF87FB66F4D1 /* Pods-Artsy Tests.demo.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Artsy Tests.demo.xcconfig"; path = "Pods/Target Support Files/Pods-Artsy Tests/Pods-Artsy Tests.demo.xcconfig"; sourceTree = "<group>"; };
+		CBD140C025016E18001B9A5C /* HandoffArtist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandoffArtist.swift; sourceTree = "<group>"; };
 		CBFCA0542427ABBB00B2822D /* apple-login@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "apple-login@3x.png"; sourceTree = "<group>"; };
 		CBFCA0552427ABBB00B2822D /* apple-login@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "apple-login@2x.png"; sourceTree = "<group>"; };
 		CBFCA0582427ABC500B2822D /* facebook-login@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "facebook-login@3x.png"; sourceTree = "<group>"; };
@@ -3882,6 +3884,7 @@
 			isa = PBXGroup;
 			children = (
 				CB21F51624DDD01C00B592F8 /* HandoffArtwork.swift */,
+				CBD140C025016E18001B9A5C /* HandoffArtist.swift */,
 			);
 			path = HandoffModels;
 			sourceTree = "<group>";
@@ -4754,6 +4757,7 @@
 				E61446AD195A1CDC00BFB7C3 /* ARArtworkFavoritesNetworkModel.m in Sources */,
 				60903CD8175CF27D002AB800 /* ARAdminTableViewCell.m in Sources */,
 				60903CDD175DE1C2002AB800 /* ARFeed.m in Sources */,
+				CBD140C125016E18001B9A5C /* HandoffArtist.swift in Sources */,
 				60CEA77E19B61F8000CC3A91 /* ARArtistNetworkModel.m in Sources */,
 				60289229176BE98C00512977 /* ARViewInRoomViewController.m in Sources */,
 				6016C190178C2B7F008EC8E7 /* AREmbeddedModelsViewController.m in Sources */,
