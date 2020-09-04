@@ -156,6 +156,7 @@ function getNativeModules(): typeof NativeModules {
           AROptionsLotConditionReport: false,
           AROptionsPriceTransparency: false,
           AROptionsViewingRooms: false,
+          AROptionsNewSalePage: false,
           AREnableViewingRooms: false,
           AROptionsArtistSeries: false,
           ipad_vir: false,
