@@ -166,6 +166,7 @@ function getNativeModules(): typeof NativeModules {
         },
       },
       postNotificationName: jest.fn(),
+      didFinishBootstrapping: jest.fn(),
     },
 
     ARTemporaryAPIModule: {
