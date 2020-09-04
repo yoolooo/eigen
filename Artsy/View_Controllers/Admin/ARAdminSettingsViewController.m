@@ -66,7 +66,6 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
 
     ARSectionData *launcherSections = [[ARSectionData alloc] initWithCellDataArray:@[
         [self generateArtistSeries],
-        [self generateViewingRooms],
         [self generateFeaturePage],
         [self generateShowAllLiveAuctions],
         [self showConsignmentsFlow],
@@ -111,27 +110,17 @@ NSString *const ARRecordingScreen = @"ARRecordingScreen";
     }];
 }
 
-- (ARCellData *)generateViewingRooms
-{
-    return [self tappableCellDataWithTitle:@"→ Viewing Rooms landing page" selection:^{
-        ARComponentViewController *viewController = [[ARComponentViewController alloc] initWithEmission:nil
-                                                                                             moduleName:@"ViewingRooms" initialProperties:nil];
-        [[ARTopMenuViewController sharedController] pushViewController:viewController animated:YES];
-    }];
-}
-
 - (ARCellData *)generateFeaturePage
 {
-    return [self tappableCellDataWithTitle:@"→ Feature Page (use production first)" selection:^{
-        [[ARTopMenuViewController sharedController] pushViewController:[[ARComponentViewController alloc] initWithEmission:nil moduleName:@"Feature" initialProperties:@{@"slug": @"milan-gallery-community"}] animated:YES];
+    return [self tappableCellDataWithTitle:@"→ Feature Page" selection:^{
+        [[AREmission sharedInstance] navigate:@"/feature/milan-gallery-community"];
     }];
 }
 
 - (ARCellData *)generateArtistSeries
 {
     return [self tappableCellDataWithTitle:@"→ Artist Series" selection:^{
-        AREigenArtistSeriesComponentViewController *viewController = [[AREigenArtistSeriesComponentViewController alloc] initWithArtistSeriesID:@"alex-katz-ada"];
-        [[ARTopMenuViewController sharedController] pushViewController:viewController animated:YES];
+        [[AREmission sharedInstance] navigate:@"/artist-series/alex-katz-ada"];
     }];
 }
 
