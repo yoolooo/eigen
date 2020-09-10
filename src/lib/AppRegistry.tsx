@@ -139,18 +139,18 @@ const Inbox: React.SFC<{}> = screenTrack<{}>(
 
 interface GeneProps {
   geneID: string
-  refineSettings: { medium: string; price_range: string }
+  medium: string
+  price_range: string
 }
 
-const Gene: React.SFC<GeneProps> = screenTrack<GeneProps>((props) => {
+const Gene: React.FC<GeneProps> = screenTrack<GeneProps>((props) => {
   return {
     context_screen: Schema.PageNames.GenePage,
     context_screen_owner_slug: props.geneID,
     context_screen_owner_type: Schema.OwnerEntityTypes.Gene,
   }
-})(({ geneID, refineSettings: { medium, price_range } }) => {
-  const initialProps = { geneID, medium, price_range }
-  return <GeneQueryRenderer {...initialProps} />
+})((props) => {
+  return <GeneQueryRenderer {...props} />
 })
 
 interface InquiryProps {
