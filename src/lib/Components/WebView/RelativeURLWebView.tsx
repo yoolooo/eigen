@@ -1,7 +1,7 @@
 import { Flex, Sans, Spinner } from "palette"
 import React, { useEffect, useState } from "react"
 import { NativeModules } from "react-native"
-import { WebView } from "react-native-webview"
+import { ArtsyWebView } from "./ArtsyWebView"
 
 interface WebViewProps {
   route: string
@@ -16,10 +16,10 @@ export const RelativeURLWebView: React.FC<WebViewProps> = ({ route }) => {
   useEffect(() => {
     const resolveURL = async () => {
       NativeModules.ARTemporaryAPIModule.resolveRelativeURL(route)
-        .then(resolvedURL => {
+        .then((resolvedURL) => {
           setURLResolution({ resolvedURL, failedToLoad: false })
         })
-        .catch(_ => {
+        .catch((_) => {
           setURLResolution({ resolvedURL: null, failedToLoad: true })
         })
     }
@@ -27,7 +27,7 @@ export const RelativeURLWebView: React.FC<WebViewProps> = ({ route }) => {
   }, [route])
 
   if (urlResolution.resolvedURL) {
-    return <WebView source={{ uri: urlResolution.resolvedURL }} />
+    return <ArtsyWebView uri={urlResolution.resolvedURL} />
   } else if (urlResolution.failedToLoad) {
     // TODO: Probably want to show 404 page rather than this
     return <Sans size="3t">Something went wrong</Sans>
