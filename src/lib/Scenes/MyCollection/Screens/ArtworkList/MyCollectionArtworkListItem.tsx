@@ -1,13 +1,13 @@
 import { MyCollectionArtworkListItem_artwork$key } from "__generated__/MyCollectionArtworkListItem_artwork.graphql"
 import OpaqueImageView from "lib/Components/OpaqueImageView/OpaqueImageView"
+import { formatMedium } from "lib/Scenes/MyCollection/utils/formatArtworkMedium"
 import { AppStore } from "lib/store/AppStore"
-import { capitalize } from "lodash"
+import { useScreenDimensions } from "lib/utils/useScreenDimensions"
 import { Box, Button, color, Flex, Sans } from "palette"
 import React from "react"
 import { GestureResponderEvent } from "react-native"
 import { graphql, useFragment } from "relay-hooks"
 import styled from "styled-components/native"
-
 interface MyCollectionArtworkListItemProps {
   artwork: MyCollectionArtworkListItem_artwork$key
   onPress: (event: GestureResponderEvent) => void
@@ -23,6 +23,7 @@ export const MyCollectionArtworkListItem: React.FC<MyCollectionArtworkListItemPr
         slug
         artistNames
         medium
+        title
         image {
           url
         }
@@ -43,17 +44,35 @@ export const MyCollectionArtworkListItem: React.FC<MyCollectionArtworkListItemPr
   const Medium = () =>
     !!artworkProps.medium ? (
       <Sans size="3t" color="black60" numberOfLines={1}>
-        {capitalize(artworkProps.medium)}
+        {formatMedium(artworkProps.medium)}
       </Sans>
     ) : null
 
+  const Title = () =>
+    !!artworkProps.title ? (
+      <Sans size="3t" color="black60" numberOfLines={1}>
+        {artworkProps.title}
+      </Sans>
+    ) : null
+
+  const { width } = useScreenDimensions()
+  const artworkTextMaxWidth = width / 2
+
   return (
     <TouchElement onPress={onPress}>
-      <Flex m={1} flexDirection="row" alignItems="center" justifyContent="space-between">
+      <Flex
+        m={1}
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+        maxWidth={width}
+        overflow="hidden"
+      >
         <Flex flexDirection="row" alignItems="center">
           <Image />
-          <Box mx={1}>
+          <Box mx={1} maxWidth={artworkTextMaxWidth}>
             <Sans size="4">{artworkProps.artistNames}</Sans>
+            <Title />
             <Medium />
           </Box>
         </Flex>
